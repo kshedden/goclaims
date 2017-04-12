@@ -1,3 +1,10 @@
+// Code generation script for sastocols.  Takes a variable definition
+// file in json format and generates code for bucketing and
+// columnizing a SAS file containing such variables.  This script is
+// run automatically via the command:
+//
+// go generate procsas.go
+
 // +build ignore
 
 package main
@@ -11,20 +18,42 @@ import (
 	"text/template"
 )
 
+const (
+	templateName = "defs.template"
+)
+
+// tvals contains values that are to be insterted into the code
+// template.
 type tvals struct {
 	Dtypes   string
 	NameType []*vardesc
 }
 
+// vardesc is a description of a variable to be handled by this
+// script.  Name, GoType, and SASType must be provided, and Must is
+// optional.  SASName
 type vardesc struct {
-	Name     string
-	GoType   string
-	SASType  string
-	SASName  string
-	SASTypeU string
-	Must     bool
+
+	// Name of the variable in the output datasets.
+	Name string
+
+	// Data type of the variable in the output datasets.
+	GoType string
+
+	// Type of the variable in the SAS datasets, must be float64
+	// or string.
+	SASType string
+
+	// If true, produces an error if the variable is not present.
+	// Otherwise silently skips processing this variable when it
+	// is not present.
+	Must bool
+
+	SASName  string // used internally
+	SASTypeU string // used internally
 }
 
+// Read a json file containing the variable information.
 func getTvals() *tvals {
 
 	fid, err := os.Open(os.Args[1])
@@ -55,6 +84,8 @@ func getTvals() *tvals {
 	}
 }
 
+// getdtypes returns a json encoded map describing the dtypes, based
+// on the array of variable descriptions.
 func getdtypes(nametype []*vardesc) string {
 
 	mp := make(map[string]string)
@@ -81,7 +112,7 @@ func main() {
 
 	tval := getTvals()
 
-	tmpl, err := template.ParseFiles("defs.template")
+	tmpl, err := template.ParseFiles(templateName)
 	if err != nil {
 		panic(err)
 	}

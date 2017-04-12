@@ -114,7 +114,7 @@ func dofile(filename string) {
 	for chunk_id := 0; ; chunk_id++ {
 
 		// DEBUG
-		if chunk_id > 2 {
+		if chunk_id > 100 {
 			break
 		}
 

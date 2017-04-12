@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Move this script out of the go source tree before running.
+
 go get -u github.com/kshedden/goclaims/sastocols
 go get -u github.com/kshedden/goclaims/sastocols/sastocols
 go get -u github.com/kshedden/goclaims/factorize

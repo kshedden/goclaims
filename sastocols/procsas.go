@@ -35,6 +35,7 @@ import (
 //go:generate go run gen.go odefs.json
 
 const (
+	// Maximum number of siultaneous goroutines.
 	concurrent = 100
 )
 
@@ -53,6 +54,8 @@ var (
 	buckets []*Bucket
 )
 
+// harvest retrieves data from the producers in the form of data
+// records, and adds each record to the appropriate bucket.
 func harvest() {
 
 	ha := adler32.New()
@@ -73,6 +76,8 @@ func harvest() {
 	hwg.Done()
 }
 
+// sendrecs drains a chunk, sending each record in the chunk to be
+// harvested.
 func sendrecs(c *chunk) {
 
 	for {
@@ -86,6 +91,7 @@ func sendrecs(c *chunk) {
 	wg.Done()
 }
 
+// dofile processes one SAS file.
 func dofile(filename string) {
 
 	defer func() { wg.Done() }()
@@ -113,7 +119,6 @@ func dofile(filename string) {
 
 	for chunk_id := 0; ; chunk_id++ {
 
-		// DEBUG
 		if config.MaxChunk > 0 && chunk_id > config.MaxChunk {
 			break
 		}
@@ -134,6 +139,10 @@ func dofile(filename string) {
 	}
 }
 
+// nextrec finds the next valid record from the chunk and returns it.
+// recs with missing enrolid values are skipped, so this may not
+// return a value for every row of the SAS file chunk.  Returns nil
+// when the chunk is fully processed.
 func (c *chunk) nextrec() *rec {
 
 	for {

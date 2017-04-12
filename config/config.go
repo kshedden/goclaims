@@ -21,7 +21,7 @@ type Config struct {
 	// Read this number of rows at a time from the SAS files
 	SASChunkSize uint64
 
-	// Split the data into this number of buckers
+	// Split the data into this number of buckets
 	NumBuckets uint32
 
 	// Store this number of buckets in memory before writing to disk
@@ -37,6 +37,8 @@ var (
 	DTsize = map[string]int{"uint8": 1, "uint16": 2, "uint32": 4, "uint64": 8}
 )
 
+// ReadConfig returns the configuration information stored at the
+// given file path.
 func ReadConfig(filename string) *Config {
 
 	config := new(Config)
@@ -61,8 +63,9 @@ func BucketPath(bucket int, conf *Config) string {
 	return path.Join(conf.TargetDir, "Buckets", b)
 }
 
-// ReadDtypes returns the dtypes map for a given bucket.  The dtypes
-// map is a map from variable names to their data type.
+// ReadDtypes returns a map describing the column data types map for a
+// given bucket.  The dtypes map associates variable names with their
+// data type (e.g. uint8).
 func ReadDtypes(bucket int, conf *Config) map[string]string {
 
 	dtypes := make(map[string]string)
@@ -84,6 +87,8 @@ func ReadDtypes(bucket int, conf *Config) map[string]string {
 	return dtypes
 }
 
+// ReadFactorCodes returns a map from strings to integers describing a
+// factor-coded variable.
 func ReadFactorCodes(varname string, conf *Config) map[string]int {
 
 	fn := path.Join(conf.TargetDir, varname+".json")
@@ -103,6 +108,8 @@ func ReadFactorCodes(varname string, conf *Config) map[string]int {
 	return mp
 }
 
+// RevFactorCodes returns the reverse factor coding map, associating
+// integers with their corresponding string label.
 func RevCodes(codes map[string]int) map[int]string {
 
 	rcodes := make(map[int]string)

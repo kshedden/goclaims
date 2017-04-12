@@ -26,6 +26,10 @@ type Config struct {
 
 	// Store this number of buckets in memory before writing to disk
 	BufMaxRecs uint64
+
+	// Process only this number of chunks.  If zero, all the
+	// chunks are processed.
+	MaxChunk uint32
 }
 
 var (

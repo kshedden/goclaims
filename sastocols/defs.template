@@ -1,0 +1,139 @@
+package sastocols
+
+import (
+    "strings"
+    "strconv"
+    "github.com/kshedden/datareader"
+)
+
+var (
+    dtypes = `{{ .Dtypes }}`
+)
+
+// rec is a row that will be added to a Bucket.
+type rec struct {
+{{ range .NameType }}
+        {{ .Name }} {{ .GoType }}
+{{- end }}
+}
+
+// Bucket is a memory-backed container for columnized data.  It
+// contains data exactly as it will be written to disk.
+type Bucket struct {
+        BaseBucket
+
+        code []uint16
+{{- range .NameType }}
+        {{ .Name }} []{{ .GoType }}
+{{- end }}
+}
+
+// chunk is a typed container for data pulled directly out of a SAS file.
+// There are no type conversions or other modifications from the SAS file.
+type chunk struct {
+        row int
+        col int
+
+{{- range .NameType }}
+    {{ .Name }} []{{ .SASType }}
+    {{ .Name }}m []bool
+{{- end }}
+}
+
+
+// Add appends a rec to the end of the Bucket.
+func (bucket *Bucket) Add(r *rec) {
+
+	bucket.mut.Lock()
+
+{{ range .NameType }}
+    bucket.{{ .Name }} = append(bucket.{{ .Name }}, r.{{  .Name }})
+{{- end }}
+
+	bucket.mut.Unlock()
+
+	if uint64(len(bucket.enrolid)) > conf.BufMaxRecs {
+		bucket.Flush()
+	}
+}
+
+// Flush writes all the data from the Bucket to disk.
+func (bucket *Bucket) Flush() {
+
+	logger.Printf("Flushing bucket %d", bucket.BucketNum)
+
+	bucket.mut.Lock()
+
+{{ range .NameType }}
+	bucket.flush{{ .GoType }}("{{ .Name }}", bucket.{{ .Name }})
+	bucket.code = bucket.code[0:0]
+{{- end }}
+
+	bucket.mut.Unlock()
+}
+
+
+// getcols fills a chunk with data from a SAS file.
+func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
+
+	var err error
+	c.enrolid, c.enrolidm, err = data[cm["ENROLID"]].AsFloat64Slice()
+	if err != nil {
+		panic(err)
+	}
+
+        var ii int
+        var ok bool
+{{ range .NameType }}
+        ii, ok = cm["{{ .SASName }}"]
+        if ok {
+	        c.{{ .Name }}, c.{{ .Name }}m, err = data[ii].As{{ .SASTypeU }}Slice()
+	        if err != nil {
+		        panic(err)
+	        }
+        }
+{{ end }}
+}
+
+func (c *chunk) trynextrec() (*rec, bool) {
+
+	if c.row >= len(c.enrolid) {
+		return nil, false
+	}
+
+	r := new(rec)
+
+	i := c.row
+
+	if c.enrolidm[i] {
+	        c.row++
+	        return nil, true
+        }
+
+{{ range .NameType }}
+    {{ if not .Must }}
+        if c.{{ .Name }} != nil {
+    {{ end }}
+    {{ if and (eq .SASType "string") (ne .GoType "string") }}
+            // Convert string to number
+            if len(c.{{ .Name }}[i]) > 0 {
+                x, err := strconv.Atoi(c.{{ .Name }}[i])
+                if err != nil {
+                    panic(err)
+                }
+                r.{{ .Name }} = {{ .GoType }}(x)
+            }
+    {{ else if eq .GoType "string" }}
+        r.{{ .Name }} = strings.TrimSpace(c.{{ .Name }}[i])
+    {{ else }}
+        r.{{ .Name }} = {{ .GoType }}(c.{{ .Name }}[i])
+    {{ end }}
+    {{ if not .Must }}
+        }
+    {{ end }}
+{{- end }}
+
+        c.row++
+
+	return r, true
+}

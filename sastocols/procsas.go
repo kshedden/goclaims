@@ -3,11 +3,12 @@ Package sastocols buckets and columnizes a collection of SAS datasets.
 
 The records from the datasets are placed into buckets based on the
 value of a bucketing variable (currently must be "ENROLID").  All
-records for a given bucketing variable are guaranteed to be placed
-into the same bucket.
+records with a given value of the bucketing variable are guaranteed to
+be placed into the same bucket.
 
 Within each bucket, the variables are stored as gzip-compressed
-columns, in various native data formats.
+columns, in various native data formats.  A json file describing the
+columns is placed into each bucket directory.
 
 To make this efficient, code generation is used to compile a template
 into a go program based on provided variable information.  See

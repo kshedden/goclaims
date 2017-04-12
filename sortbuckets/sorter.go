@@ -1,3 +1,10 @@
+/*
+Package sortbuckets sorts each bucket first by the bucketing variable,
+then by the date variable.
+
+TODO: bucketing variable and date variable are not configurable.
+*/
+
 package sortbuckets
 
 import (

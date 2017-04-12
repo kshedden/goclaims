@@ -1,5 +1,6 @@
 /*
-Factorize converts strings to uint16 codes, and saves the mapping from strings to codes as a json file.
+Package factorize converts strings to uint16 codes, and saves the
+mapping from strings to codes as a json file.
 */
 
 package factorize

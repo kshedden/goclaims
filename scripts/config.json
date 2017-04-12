@@ -4,5 +4,6 @@
     "TargetDir": "/nfs/turbo/ihpi-dads/CSCAR/MarketScan/O",
     "SASChunkSize": 1000000,
     "NumBuckets": 100,
-    "BufMaxRecs": 500000
+    "BufMaxRecs": 500000,
+    "MaxChunk": 100
 }

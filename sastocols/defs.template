@@ -4,7 +4,6 @@ import (
     "strings"
     "strconv"
     "fmt"
-    "os"
     "github.com/kshedden/datareader"
 )
 
@@ -76,7 +75,7 @@ func (bucket *Bucket) Flush() {
 
 
 // getcols fills a chunk with data from a SAS file.
-func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
+func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 
 	var err error
         var ii int
@@ -91,13 +90,14 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
         {{ if .Must }}
 	    } else {
 	           msg := fmt.Sprintf("Variable {{ .SASName }} required but not found in SAS file\n")
-                   os.Stderr.WriteString(msg)
-	           os.Exit(1)
+                   return fmt.Errorf(msg)
             }
 	{{ else }}
             }
         {{ end }}
 {{ end }}
+
+        return nil
 }
 
 func (c *chunk) trynextrec() (*rec, bool) {

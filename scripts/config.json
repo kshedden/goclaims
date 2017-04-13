@@ -1,6 +1,6 @@
 {
-    "SourceDir": "/nfs/turbo/ihpi-dads/MarketScan",
-    "SASFiles": ["New 2009/ccaeo093.sas7bdat", "New 2010/ccaeo103.sas7bdat", "New 2011/ccaeo113.sas7bdat", "New 2012/ccaeo122.sas7bdat", "New 2013/2013/ccaeo131.sas7bdat", "New 2014/ccaeo142.sas7bdat"],
+    "SourceDir": "/nfs/turbo/ihpi-dads/MarketScan/Data",
+    "SASFiles": ["2009/ccaeo093.sas7bdat", "2010/ccaeo103.sas7bdat", "2011/ccaeo113.sas7bdat", "2012/ccaeo122.sas7bdat", "2013/ccaeo131.sas7bdat", "2014/ccaeo142.sas7bdat", "2015/ccaeo151.sas7bdat"],
     "TargetDir": "/nfs/turbo/ihpi-dads/CSCAR/MarketScan/O",
     "SASChunkSize": 1000000,
     "NumBuckets": 100,

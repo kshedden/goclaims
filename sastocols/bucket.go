@@ -16,11 +16,16 @@ import (
 )
 
 type BaseBucket struct {
+
+	// The number of the bucket, corresponds to the file name in
+	// the Buckets directory.
 	BucketNum uint32
 
+	// Locks for accessing the bucket's data.
 	mut sync.Mutex
 }
 
+// openfile opens a file for appending data in the bucket's directory.
 func (bucket *BaseBucket) openfile(varname string) (io.Closer, io.WriteCloser) {
 
 	vnl := strings.ToLower(varname)
@@ -34,21 +39,6 @@ func (bucket *BaseBucket) openfile(varname string) (io.Closer, io.WriteCloser) {
 	gid := gzip.NewWriter(fid)
 
 	return fid, gid
-}
-
-func (bucket *BaseBucket) flushbyte(varname string, vec []byte) {
-
-	toclose, wtr := bucket.openfile(varname)
-
-	for _, x := range vec {
-		err := binary.Write(wtr, binary.LittleEndian, x)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	wtr.Close()
-	toclose.Close()
 }
 
 func (bucket *BaseBucket) flushstring(varname string, vec []string) {

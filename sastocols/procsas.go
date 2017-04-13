@@ -35,7 +35,7 @@ import (
 //go:generate go run gen.go odefs.json
 
 const (
-	// Maximum number of siultaneous goroutines.
+	// Maximum number of simultaneous goroutines.
 	concurrent = 100
 )
 
@@ -121,9 +121,9 @@ func dofile(filename string) {
 
 	for chunk_id := 0; ; chunk_id++ {
 
-		logger.Printf("chunk %d", chunk_id)
+		logger.Printf("Starting chunk %d", chunk_id)
 		if conf.MaxChunk > 0 && chunk_id > int(conf.MaxChunk) {
-			logger.Printf("Read %d blocks, breaking early", chunk_id)
+			logger.Printf("Read %d blocks from %s, breaking early", chunk_id, filename)
 			break
 		}
 
@@ -137,7 +137,12 @@ func dofile(filename string) {
 			panic(err)
 		}
 
-		chunk.getcols(data, cm)
+		err = chunk.getcols(data, cm)
+		if err != nil {
+			print("In file ", filename, "\n\n")
+			panic(err)
+		}
+
 		wg.Add(1)
 		sem <- true
 		go sendrecs(chunk)

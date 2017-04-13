@@ -66,7 +66,10 @@ func harvest() {
 
 		binary.LittleEndian.PutUint64(buf, r.enrolid)
 		ha.Reset()
-		ha.Write(buf)
+		_, err := ha.Write(buf)
+		if err != nil {
+			panic(err)
+		}
 
 		bucket := int(ha.Sum32() % conf.NumBuckets)
 
@@ -86,6 +89,7 @@ func sendrecs(c *chunk) {
 		if r == nil {
 			break
 		}
+		logger.Printf("sending a record: %d\n", r.enrolid)
 		rslt_chan <- r
 	}
 
@@ -122,6 +126,7 @@ func dofile(filename string) {
 
 		logger.Printf("chunk %d", chunk_id)
 		if conf.MaxChunk > 0 && chunk_id > int(conf.MaxChunk) {
+			logger.Printf("Read %d blocks, breaking early", chunk_id)
 			break
 		}
 

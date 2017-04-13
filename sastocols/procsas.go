@@ -119,7 +119,8 @@ func dofile(filename string) {
 
 	for chunk_id := 0; ; chunk_id++ {
 
-		if config.MaxChunk > 0 && chunk_id > config.MaxChunk {
+		logger.Printf("chunk %d", chunk_id)
+		if conf.MaxChunk > 0 && chunk_id > conf.MaxChunk {
 			break
 		}
 

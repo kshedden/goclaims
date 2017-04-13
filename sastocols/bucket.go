@@ -1,5 +1,5 @@
 /*
-A generic bucket.
+Generic methods used by all buckets.
 */
 
 package sastocols

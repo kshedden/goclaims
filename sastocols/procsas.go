@@ -70,7 +70,7 @@ func harvest() {
 
 		bucket := int(ha.Sum32() % conf.NumBuckets)
 
-		fmt.Printf("%d %d\n", r.enrolid, bucket)
+		logger.Printf("%d %d\n", r.enrolid, bucket)
 		buckets[bucket].Add(r)
 	}
 

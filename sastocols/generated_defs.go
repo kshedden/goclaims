@@ -2,7 +2,9 @@
 package sastocols
 
 import (
+	"fmt"
 	"github.com/kshedden/datareader"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -206,11 +208,6 @@ func (bucket *Bucket) Flush() {
 func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 
 	var err error
-	c.enrolid, c.enrolidm, err = data[cm["ENROLID"]].AsFloat64Slice()
-	if err != nil {
-		panic(err)
-	}
-
 	var ii int
 	var ok bool
 
@@ -220,6 +217,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable ENROLID required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["DX1"]
@@ -228,6 +230,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable DX1 required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["DX2"]
@@ -236,6 +243,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable DX2 required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["DX3"]
@@ -244,6 +256,7 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
 	}
 
 	ii, ok = cm["DX4"]
@@ -252,6 +265,7 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
 	}
 
 	ii, ok = cm["PROC1"]
@@ -260,6 +274,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable PROC1 required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["SVCDATE"]
@@ -268,6 +287,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable SVCDATE required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["DOBYR"]
@@ -276,6 +300,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable DOBYR required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["COPAY"]
@@ -284,6 +313,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable COPAY required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["DEDUCT"]
@@ -292,6 +326,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable DEDUCT required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["STDPROV"]
@@ -300,6 +339,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable STDPROV required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["MHSACOVG"]
@@ -308,6 +352,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable MHSACOVG required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["NETPAY"]
@@ -316,6 +365,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable NETPAY required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["SVCSCAT"]
@@ -324,6 +378,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable SVCSCAT required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["REGION"]
@@ -332,6 +391,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable REGION required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["MSA"]
@@ -340,6 +404,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable MSA required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["WGTKEY"]
@@ -348,6 +417,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable WGTKEY required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["EGEOLOC"]
@@ -356,6 +430,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable EGEOLOC required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["EMPREL"]
@@ -364,6 +443,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable EMPREL required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["RX"]
@@ -372,6 +456,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable RX required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 	ii, ok = cm["SEX"]
@@ -380,6 +469,11 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 		if err != nil {
 			panic(err)
 		}
+
+	} else {
+		msg := fmt.Sprintf("Variable SEX required but not found in SAS file\n")
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 
 }

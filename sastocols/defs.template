@@ -3,6 +3,8 @@ package sastocols
 import (
     "strings"
     "strconv"
+    "fmt"
+    "os"
     "github.com/kshedden/datareader"
 )
 
@@ -77,11 +79,6 @@ func (bucket *Bucket) Flush() {
 func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 
 	var err error
-	c.enrolid, c.enrolidm, err = data[cm["ENROLID"]].AsFloat64Slice()
-	if err != nil {
-		panic(err)
-	}
-
         var ii int
         var ok bool
 {{ range .NameType }}
@@ -91,7 +88,15 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) {
 	        if err != nil {
 		        panic(err)
 	        }
-        }
+        {{ if .Must }}
+	    } else {
+	           msg := fmt.Sprintf("Variable {{ .SASName }} required but not found in SAS file\n")
+                   os.Stderr.WriteString(msg)
+	           os.Exit(1)
+            }
+	{{ else }}
+            }
+        {{ end }}
 {{ end }}
 }
 

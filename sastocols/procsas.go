@@ -32,7 +32,7 @@ import (
 	"github.com/kshedden/goclaims/config"
 )
 
-//go:generate go run gen.go odefs.json
+//go:generate go run gen.go ../defs/odefs.json
 
 const (
 	// Maximum number of simultaneous goroutines.

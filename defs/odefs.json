@@ -14,7 +14,8 @@
 {"Name": "svcscat", "GoType": "uint32", "SASType": "string", "Must": true}
 {"Name": "region", "GoType": "uint8", "SASType": "string", "Must": true}
 {"Name": "msa", "GoType": "uint32", "SASType": "float64", "Must": true}
-{"Name": "wgtkey", "GoType": "uint8", "SASType": "float64", "Must": true}
+{"Name": "wgtkey", "GoType": "uint8", "SASType": "float64", "Must": false}
+{"Name": "mswgtkey", "GoType": "uint8", "SASType": "float64", "Must": false}
 {"Name": "egeoloc", "GoType": "uint8", "SASType": "string", "Must": true}
 {"Name": "emprel", "GoType": "uint8", "SASType": "string", "Must": true}
 {"Name": "rx", "GoType": "uint8", "SASType": "string", "Must": true}

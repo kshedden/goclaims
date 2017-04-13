@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	dtypes = `{"copay":"uint32","deduct":"uint32","dobyr":"uint16","dx1":"string","dx2":"string","dx3":"string","dx4":"string","egeoloc":"uint8","emprel":"uint8","enrolid":"uint64","mhsacovg":"uint8","msa":"uint32","netpay":"uint32","proc1":"string","region":"uint8","rx":"uint8","sex":"uint8","stdprov":"uint16","svcdate":"uint16","svcscat":"uint32","wgtkey":"uint8"}
+	dtypes = `{"copay":"uint32","deduct":"uint32","dobyr":"uint16","dx1":"string","dx2":"string","dx3":"string","dx4":"string","egeoloc":"uint8","emprel":"uint8","enrolid":"uint64","mhsacovg":"uint8","msa":"uint32","mswgtkey":"uint8","netpay":"uint32","proc1":"string","region":"uint8","rx":"uint8","sex":"uint8","stdprov":"uint16","svcdate":"uint16","svcscat":"uint32","wgtkey":"uint8"}
 `
 )
 
@@ -32,6 +32,7 @@ type rec struct {
 	region   uint8
 	msa      uint32
 	wgtkey   uint8
+	mswgtkey uint8
 	egeoloc  uint8
 	emprel   uint8
 	rx       uint8
@@ -61,6 +62,7 @@ type Bucket struct {
 	region   []uint8
 	msa      []uint32
 	wgtkey   []uint8
+	mswgtkey []uint8
 	egeoloc  []uint8
 	emprel   []uint8
 	rx       []uint8
@@ -106,6 +108,8 @@ type chunk struct {
 	msam      []bool
 	wgtkey    []float64
 	wgtkeym   []bool
+	mswgtkey  []float64
+	mswgtkeym []bool
 	egeoloc   []string
 	egeolocm  []bool
 	emprel    []string
@@ -138,6 +142,7 @@ func (bucket *Bucket) Add(r *rec) {
 	bucket.region = append(bucket.region, r.region)
 	bucket.msa = append(bucket.msa, r.msa)
 	bucket.wgtkey = append(bucket.wgtkey, r.wgtkey)
+	bucket.mswgtkey = append(bucket.mswgtkey, r.mswgtkey)
 	bucket.egeoloc = append(bucket.egeoloc, r.egeoloc)
 	bucket.emprel = append(bucket.emprel, r.emprel)
 	bucket.rx = append(bucket.rx, r.rx)
@@ -191,6 +196,8 @@ func (bucket *Bucket) Flush() {
 	bucket.msa = bucket.msa[0:0]
 	bucket.flushuint8("wgtkey", bucket.wgtkey)
 	bucket.wgtkey = bucket.wgtkey[0:0]
+	bucket.flushuint8("mswgtkey", bucket.mswgtkey)
+	bucket.mswgtkey = bucket.mswgtkey[0:0]
 	bucket.flushuint8("egeoloc", bucket.egeoloc)
 	bucket.egeoloc = bucket.egeoloc[0:0]
 	bucket.flushuint8("emprel", bucket.emprel)
@@ -403,9 +410,15 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 			panic(err)
 		}
 
-	} else {
-		msg := fmt.Sprintf("Variable WGTKEY required but not found in SAS file\n")
-		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["MSWGTKEY"]
+	if ok {
+		c.mswgtkey, c.mswgtkeym, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
 	}
 
 	ii, ok = cm["EGEOLOC"]
@@ -532,7 +545,17 @@ func (c *chunk) trynextrec() (*rec, bool) {
 
 	r.msa = uint32(c.msa[i])
 
-	r.wgtkey = uint8(c.wgtkey[i])
+	if c.wgtkey != nil {
+
+		r.wgtkey = uint8(c.wgtkey[i])
+
+	}
+
+	if c.mswgtkey != nil {
+
+		r.mswgtkey = uint8(c.mswgtkey[i])
+
+	}
 
 	// Convert string to number
 	if len(c.egeoloc[i]) > 0 {

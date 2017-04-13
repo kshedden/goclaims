@@ -1,5 +1,14 @@
 /*
 qperson retrieves all data for one person as csv written to stdout.
+
+Usage:
+
+> qperson config.json 1234567
+
+where 1234567 is a MarketScan enrolid.
+
+The data are returned to stdout in text/csv form, with each row
+containing the data for one variable.
 */
 
 package main
@@ -25,6 +34,7 @@ var (
 	rprocdxcodes map[int]string
 )
 
+// getbucket returns the bucket number for a given enrolid.
 func getbucket(enrolid uint64) int {
 
 	ha := adler32.New()
@@ -36,6 +46,8 @@ func getbucket(enrolid uint64) int {
 	return int(ha.Sum32() % conf.NumBuckets)
 }
 
+// findrange returns the indices marking the first and last rows for
+// the data of the subject of interest.
 func findRange(enrolid uint64, pa string) (int, int) {
 
 	fn := path.Join(pa, "enrolid.bin.gz")
@@ -86,6 +98,7 @@ func findRange(enrolid uint64, pa string) (int, int) {
 	return i1, i2
 }
 
+// handlecol extracts the data for the subject of interest from one variable.
 func handleCol(vn string, dt string, i1, i2 int, bp string) []string {
 
 	f := fmt.Sprintf("%s.bin.gz", vn)

@@ -117,10 +117,8 @@ func (c *chunk) trynextrec() (*rec, bool) {
     {{ if and (eq .SASType "string") (ne .GoType "string") }}
             // Convert string to number
             if len(c.{{ .Name }}[i]) > 0 {
-                x, err := strconv.Atoi(c.{{ .Name }}[i])
-                if err != nil {
-                    panic(err)
-                }
+	        // Ignore error for now
+                x, _ := strconv.Atoi(c.{{ .Name }}[i])
                 r.{{ .Name }} = {{ .GoType }}(x)
             }
     {{ else if eq .GoType "string" }}

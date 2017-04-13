@@ -431,25 +431,28 @@ func (c *chunk) trynextrec() (*rec, bool) {
 
 	// Convert string to number
 	if len(c.mhsacovg[i]) > 0 {
-		// Ignore error for now
-		x, _ := strconv.Atoi(c.mhsacovg[i])
-		r.mhsacovg = uint8(x)
+		x, err := strconv.Atoi(c.mhsacovg[i])
+		if err == nil {
+			r.mhsacovg = uint8(x)
+		}
 	}
 
 	r.netpay = uint32(c.netpay[i])
 
 	// Convert string to number
 	if len(c.svcscat[i]) > 0 {
-		// Ignore error for now
-		x, _ := strconv.Atoi(c.svcscat[i])
-		r.svcscat = uint32(x)
+		x, err := strconv.Atoi(c.svcscat[i])
+		if err == nil {
+			r.svcscat = uint32(x)
+		}
 	}
 
 	// Convert string to number
 	if len(c.region[i]) > 0 {
-		// Ignore error for now
-		x, _ := strconv.Atoi(c.region[i])
-		r.region = uint8(x)
+		x, err := strconv.Atoi(c.region[i])
+		if err == nil {
+			r.region = uint8(x)
+		}
 	}
 
 	r.msa = uint32(c.msa[i])
@@ -458,30 +461,34 @@ func (c *chunk) trynextrec() (*rec, bool) {
 
 	// Convert string to number
 	if len(c.egeoloc[i]) > 0 {
-		// Ignore error for now
-		x, _ := strconv.Atoi(c.egeoloc[i])
-		r.egeoloc = uint8(x)
+		x, err := strconv.Atoi(c.egeoloc[i])
+		if err == nil {
+			r.egeoloc = uint8(x)
+		}
 	}
 
 	// Convert string to number
 	if len(c.emprel[i]) > 0 {
-		// Ignore error for now
-		x, _ := strconv.Atoi(c.emprel[i])
-		r.emprel = uint8(x)
+		x, err := strconv.Atoi(c.emprel[i])
+		if err == nil {
+			r.emprel = uint8(x)
+		}
 	}
 
 	// Convert string to number
 	if len(c.rx[i]) > 0 {
-		// Ignore error for now
-		x, _ := strconv.Atoi(c.rx[i])
-		r.rx = uint8(x)
+		x, err := strconv.Atoi(c.rx[i])
+		if err == nil {
+			r.rx = uint8(x)
+		}
 	}
 
 	// Convert string to number
 	if len(c.sex[i]) > 0 {
-		// Ignore error for now
-		x, _ := strconv.Atoi(c.sex[i])
-		r.sex = uint8(x)
+		x, err := strconv.Atoi(c.sex[i])
+		if err == nil {
+			r.sex = uint8(x)
+		}
 	}
 
 	c.row++

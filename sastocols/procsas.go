@@ -72,8 +72,6 @@ func harvest() {
 		}
 
 		bucket := int(ha.Sum32() % conf.NumBuckets)
-
-		logger.Printf("%d %d\n", r.enrolid, bucket)
 		buckets[bucket].Add(r)
 	}
 
@@ -84,16 +82,15 @@ func harvest() {
 // harvested.
 func sendrecs(c *chunk) {
 
+	defer func() { <-sem; wg.Done() }()
+
 	for {
 		r := c.nextrec()
 		if r == nil {
 			break
 		}
-		logger.Printf("sending a record: %d\n", r.enrolid)
 		rslt_chan <- r
 	}
-
-	wg.Done()
 }
 
 // dofile processes one SAS file.
@@ -142,6 +139,7 @@ func dofile(filename string) {
 
 		chunk.getcols(data, cm)
 		wg.Add(1)
+		sem <- true
 		go sendrecs(chunk)
 	}
 }

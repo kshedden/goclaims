@@ -159,47 +159,47 @@ func (bucket *Bucket) Flush() {
 	bucket.mut.Lock()
 
 	bucket.flushuint64("enrolid", bucket.enrolid)
-	bucket.code = bucket.code[0:0]
+	bucket.enrolid = bucket.enrolid[0:0]
 	bucket.flushstring("dx1", bucket.dx1)
-	bucket.code = bucket.code[0:0]
+	bucket.dx1 = bucket.dx1[0:0]
 	bucket.flushstring("dx2", bucket.dx2)
-	bucket.code = bucket.code[0:0]
+	bucket.dx2 = bucket.dx2[0:0]
 	bucket.flushstring("dx3", bucket.dx3)
-	bucket.code = bucket.code[0:0]
+	bucket.dx3 = bucket.dx3[0:0]
 	bucket.flushstring("dx4", bucket.dx4)
-	bucket.code = bucket.code[0:0]
+	bucket.dx4 = bucket.dx4[0:0]
 	bucket.flushstring("proc1", bucket.proc1)
-	bucket.code = bucket.code[0:0]
+	bucket.proc1 = bucket.proc1[0:0]
 	bucket.flushuint16("svcdate", bucket.svcdate)
-	bucket.code = bucket.code[0:0]
+	bucket.svcdate = bucket.svcdate[0:0]
 	bucket.flushuint16("dobyr", bucket.dobyr)
-	bucket.code = bucket.code[0:0]
+	bucket.dobyr = bucket.dobyr[0:0]
 	bucket.flushuint32("copay", bucket.copay)
-	bucket.code = bucket.code[0:0]
+	bucket.copay = bucket.copay[0:0]
 	bucket.flushuint32("deduct", bucket.deduct)
-	bucket.code = bucket.code[0:0]
+	bucket.deduct = bucket.deduct[0:0]
 	bucket.flushuint16("stdprov", bucket.stdprov)
-	bucket.code = bucket.code[0:0]
+	bucket.stdprov = bucket.stdprov[0:0]
 	bucket.flushuint8("mhsacovg", bucket.mhsacovg)
-	bucket.code = bucket.code[0:0]
+	bucket.mhsacovg = bucket.mhsacovg[0:0]
 	bucket.flushuint32("netpay", bucket.netpay)
-	bucket.code = bucket.code[0:0]
+	bucket.netpay = bucket.netpay[0:0]
 	bucket.flushuint32("svcscat", bucket.svcscat)
-	bucket.code = bucket.code[0:0]
+	bucket.svcscat = bucket.svcscat[0:0]
 	bucket.flushuint8("region", bucket.region)
-	bucket.code = bucket.code[0:0]
+	bucket.region = bucket.region[0:0]
 	bucket.flushuint32("msa", bucket.msa)
-	bucket.code = bucket.code[0:0]
+	bucket.msa = bucket.msa[0:0]
 	bucket.flushuint8("wgtkey", bucket.wgtkey)
-	bucket.code = bucket.code[0:0]
+	bucket.wgtkey = bucket.wgtkey[0:0]
 	bucket.flushuint8("egeoloc", bucket.egeoloc)
-	bucket.code = bucket.code[0:0]
+	bucket.egeoloc = bucket.egeoloc[0:0]
 	bucket.flushuint8("emprel", bucket.emprel)
-	bucket.code = bucket.code[0:0]
+	bucket.emprel = bucket.emprel[0:0]
 	bucket.flushuint8("rx", bucket.rx)
-	bucket.code = bucket.code[0:0]
+	bucket.rx = bucket.rx[0:0]
 	bucket.flushuint8("sex", bucket.sex)
-	bucket.code = bucket.code[0:0]
+	bucket.sex = bucket.sex[0:0]
 
 	bucket.mut.Unlock()
 }

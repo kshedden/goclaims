@@ -68,7 +68,7 @@ func (bucket *Bucket) Flush() {
 
 {{ range .NameType }}
 	bucket.flush{{ .GoType }}("{{ .Name }}", bucket.{{ .Name }})
-	bucket.code = bucket.code[0:0]
+	bucket.{{ .Name }} = bucket.{{ .Name }}[0:0]
 {{- end }}
 
 	bucket.mut.Unlock()

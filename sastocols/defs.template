@@ -53,7 +53,7 @@ func (bucket *Bucket) Add(r *rec) {
 
 	bucket.mut.Unlock()
 
-	if uint64(len(bucket.enrolid)) > conf.BufMaxRecs {
+	if uint64(len(bucket.Enrolid)) > conf.BufMaxRecs {
 		bucket.Flush()
 	}
 }
@@ -102,7 +102,7 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 
 func (c *chunk) trynextrec() (*rec, bool) {
 
-	if c.row >= len(c.enrolid) {
+	if c.row >= len(c.Enrolid) {
 		return nil, false
 	}
 
@@ -110,7 +110,7 @@ func (c *chunk) trynextrec() (*rec, bool) {
 
 	i := c.row
 
-	if c.enrolidm[i] {
+	if c.Enrolidm[i] {
 	        c.row++
 	        return nil, true
         }

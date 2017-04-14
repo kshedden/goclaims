@@ -1,3 +1,8 @@
+/*
+Package config contains a configuration structure and other utility
+routines that are shared among the packages in this project.
+*/
+
 package config
 
 import (
@@ -5,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 )
 
 type Config struct {
@@ -119,4 +125,63 @@ func RevCodes(codes map[string]int) map[int]string {
 	}
 
 	return rcodes
+}
+
+// VarDesc is a description of a variable to be ported from a SAS
+// file.  Name, GoType, and SASType must be provided, and Must is
+// optional.
+type VarDesc struct {
+
+	// Name of the variable in the output datasets.
+	Name string
+
+	// Data type of the variable in the output datasets.
+	Type string
+
+	// Type of the variable in the initial conversion from SAS.
+	GoType string
+
+	// Type of the variable in the SAS datasets, must be float64
+	// or string.
+	SASType string
+
+	// If true, produces an error if the variable is not present.
+	// Otherwise silently skips processing this variable when it
+	// is not present.
+	Must bool
+
+	SASName  string // used internally
+	SASTypeU string // used internally
+}
+
+// Read a json file containing the variable information.
+func GetVarDefs(filename string) []*VarDesc {
+
+	fid, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer fid.Close()
+
+	var vdesca []*VarDesc
+	dec := json.NewDecoder(fid)
+	for dec.More() {
+		x := new(VarDesc)
+		err = dec.Decode(&x)
+		if err != nil {
+			panic(err)
+		}
+		vdesca = append(vdesca, x)
+	}
+
+	for _, v := range vdesca {
+		v.SASName = strings.ToUpper(v.Name)
+		v.SASTypeU = strings.Title(v.SASType)
+
+		if v.Type == "" {
+			v.Type = v.GoType
+		}
+	}
+
+	return vdesca
 }

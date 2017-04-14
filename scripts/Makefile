@@ -13,5 +13,9 @@ B3=${BASE}/sortbuckets/sortbuckets
 sortbuckets:
 	cd ${B3}; go install
 
+B4=${BASE}/walk/owalk
+owalk:
+	cd ${B4}; go install
 
-all: sastocols factorizedx sortbuckets
+
+all: sastocols factorizedx sortbuckets owalk

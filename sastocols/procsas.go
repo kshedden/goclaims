@@ -64,7 +64,7 @@ func harvest() {
 
 	for r := range rslt_chan {
 
-		binary.LittleEndian.PutUint64(buf, r.enrolid)
+		binary.LittleEndian.PutUint64(buf, r.Enrolid)
 		ha.Reset()
 		_, err := ha.Write(buf)
 		if err != nil {

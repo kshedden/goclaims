@@ -14,8 +14,9 @@ import (
 	"encoding/json"
 	"go/format"
 	"os"
-	"strings"
 	"text/template"
+
+	"github.com/kshedden/goclaims/config"
 )
 
 const (
@@ -26,67 +27,12 @@ const (
 // template.
 type tvals struct {
 	Dtypes   string
-	NameType []*vardesc
-}
-
-// vardesc is a description of a variable to be handled by this
-// script.  Name, GoType, and SASType must be provided, and Must is
-// optional.  SASName
-type vardesc struct {
-
-	// Name of the variable in the output datasets.
-	Name string
-
-	// Data type of the variable in the output datasets.
-	GoType string
-
-	// Type of the variable in the SAS datasets, must be float64
-	// or string.
-	SASType string
-
-	// If true, produces an error if the variable is not present.
-	// Otherwise silently skips processing this variable when it
-	// is not present.
-	Must bool
-
-	SASName  string // used internally
-	SASTypeU string // used internally
-}
-
-// Read a json file containing the variable information.
-func getTvals() *tvals {
-
-	fid, err := os.Open(os.Args[1])
-	if err != nil {
-		panic(err)
-	}
-	defer fid.Close()
-
-	var vdesca []*vardesc
-	dec := json.NewDecoder(fid)
-	for dec.More() {
-		x := new(vardesc)
-		err = dec.Decode(&x)
-		if err != nil {
-			panic(err)
-		}
-		vdesca = append(vdesca, x)
-	}
-
-	for _, v := range vdesca {
-		v.SASName = strings.ToUpper(v.Name)
-		v.SASTypeU = strings.Title(v.SASType)
-	}
-
-	return &tvals{
-		NameType: vdesca,
-		Dtypes:   getdtypes(vdesca),
-	}
+	NameType []*config.VarDesc
 }
 
 // getdtypes returns a json encoded map describing the dtypes, based
 // on the array of variable descriptions.
-func getdtypes(nametype []*vardesc) string {
+func getdtypes(nametype []*config.VarDesc) string {
 
 	mp := make(map[string]string)
 
@@ -110,11 +56,16 @@ func main() {
 		panic("wrong number of arguments")
 	}
 
-	tval := getTvals()
+	vdesca := config.GetVarDefs(os.Args[1])
 
 	tmpl, err := template.ParseFiles(templateName)
 	if err != nil {
 		panic(err)
+	}
+
+	tval := &tvals{
+		NameType: vdesca,
+		Dtypes:   getdtypes(vdesca),
 	}
 
 	var buf bytes.Buffer

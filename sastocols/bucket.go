@@ -11,7 +11,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"strings"
 	"sync"
 )
 
@@ -28,9 +27,8 @@ type BaseBucket struct {
 // openfile opens a file for appending data in the bucket's directory.
 func (bucket *BaseBucket) openfile(varname string) (io.Closer, io.WriteCloser) {
 
-	vnl := strings.ToLower(varname)
 	bns := fmt.Sprintf("%04d", bucket.BucketNum)
-	fn := path.Join(conf.TargetDir, "Buckets", bns, vnl+".bin.gz")
+	fn := path.Join(conf.TargetDir, "Buckets", bns, varname+".bin.gz")
 	fid, err := os.OpenFile(fn, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		panic(err)

@@ -21,6 +21,10 @@ Project
 |      |       |-------dtypes.json
 ```
 
+Each file contains a raw stream of binary data values, with no header
+or metadata (type metadata is placed in the dtypes.json file).  The
+exception to this is that string values are delimited by newlines.
+
 The files name prefixes Var1, Var2, etc. are the variable names from
 the SAS files.  The number of "buckets" (e.g. two in the example
 above) is configurable by the user.
@@ -28,8 +32,8 @@ above) is configurable by the user.
 Rows from the SAS files are mapped into the buckets using an id
 variable.  The id variable is hashed to determine the bucket for a
 given row of data.  All rows with the same id are sent to the same
-bucket.  The data within each bucket are sorted by id, and within an
-id level the data are sorted by a specified sequence variable
+bucket.  The data within each bucket are sorted by id, and within
+levels of the id variable, the data are sorted by a sequence variable
 (e.g. time).
 
 The variables can be converted from their SAS type to any Go type when
@@ -79,6 +83,13 @@ The construction of the data described here is intended to be
 efficient for large SAS files, making extensive use of concurrent
 processing.  For example, around 3TB of SAS files can be reduced to
 around 200GB of data in around 15 hours on a single workstation.
+
+The SAS files are read using a [native Go SAS
+reader](github.com/kshedden/datareader), therefore SAS software is not
+required to carry out this pipeline.  The native Go SAS reader has
+been tested on many examples and found to give accurate results.
+However the SAS file specification is not public so it is not possible
+to know that the results will be accurate in every case.
 
 Configuration
 -------------
@@ -250,3 +261,6 @@ TODO
 
 * We only support unsigned Go integer types, it would be easy to add
   support for signed integer types.
+
+* The files are currently [snappy](https://google.github.io/snappy)
+  compressed, but optional gzip compression would be easy to add.

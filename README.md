@@ -4,7 +4,7 @@ Convert SAS files to bucketed columnized files
 Suppose we are given a collection of large SAS files having a common
 set of variables (optionally, some variables may be absent from some
 of the files).  The goal is to produce a directory layout containing
-all of the SAS file data like this:
+all the data obtained from the SAS files like this:
 
 ```
 Project
@@ -34,8 +34,9 @@ variable.
 
 The variables can be converted from their SAS type to any Go type when
 forming the buckets.  Go types are native integer, floating point, and
-string values, so it is relatively easy to process these data from any
-programming language.
+string values, so it is easy to process these data from any
+programming language (numeric types are always written in little
+endian form).
 
 String variables whose values are "factors" can be converted to Go
 [uvarint](https://golang.org/pkg/encoding/binary/#Uvarint) values for
@@ -46,7 +47,7 @@ variable names to string data types (using Go type names), for
 example:
 
 ```
-{"Var1": "uint32", "Var2": "float64", "Var3": "string"}
+{"Var1": "uint32", "Var2": "float64", "Var3": "string", "Var4": "uvarint"}
 ```
 
 The data construction pipeline involves three steps, controlled by a
@@ -132,15 +133,17 @@ go run sastocols.go config.json
 factorize
 ---------
 
-`factorize` is used to convert strings to integer factor codes.  It is
-mainly useful when the variable has a small to moderate number of
-distinct values, or when there is a large number of distinct values
-but a small subset of these values are much more common than the
-others.  The factor codes are represented as `uvarint` values that can
-be easily converted to standard fixed-width integers.  A
-`map[string]int` mapping the string values to their integer values is
-written (in json-format) to the `CodesDir` directory specified in the
-configuration file.
+`factorize` is used to convert strings to integer factor codes
+(represented on disk as uvarint value).  Doing this is mainly useful
+for a variable that has a small to moderate number of distinct values,
+or when there is a large number of distinct values but a small subset
+of these values are much more common than the others.
+
+The factor codes are represented on-disk as `uvarint` values that can
+be easily converted to standard fixed-width integers when reading into
+memory.  A `map[string]int` mapping the string values to their integer
+codes is written (in json-format) to the `CodesDir` directory
+specified in the configuration file.
 
 A group of variables can be factorized together, meaning that they
 will share the same code dictionary.
@@ -160,6 +163,17 @@ are to be jointly factorized.
 
 Since factorize modifies the `dtypes.json` file, do not run multiple
 factorize scripts on a database simultaneously.
+
+The `factorize` command supports a limited "undo" operation.  The
+factorization can be reverted (i.e. the uvarint values are converted
+back to their string values) using the command
+
+```
+factorize revert prefix config1.json config2.json...
+```
+
+Note that reversion is not possible after `sortbuckets` (below) has
+been run, or if `cleanbuckets` has been run.
 
 sortbuckets
 -----------

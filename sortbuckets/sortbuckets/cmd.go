@@ -57,15 +57,15 @@ func main() {
 
 	if len(os.Args) != 5 {
 		_, _ = os.Stderr.WriteString("sortbuckets: wrong number of arguments, usage\n\n")
-		_, _ = os.Stderr.WriteString("    sortbuckets config.json idvar timevar (run|revert)\n\n")
+		_, _ = os.Stderr.WriteString("    sortbuckets [run|revert] idvar timevar config.json\n\n")
 		os.Exit(1)
 	}
 
-	conf = config.ReadConfig(os.Args[1])
+	conf = config.ReadConfig(os.Args[4])
 	setupLogger()
-	logger.Printf("Read configuration from %s", os.Args[1])
+	logger.Printf("Read configuration from %s", os.Args[4])
 
-	if os.Args[4] == "revert" {
+	if os.Args[1] == "revert" {
 		logger.Printf("Reverting to unsorted state")
 		revert()
 		os.Exit(0)

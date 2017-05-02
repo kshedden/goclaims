@@ -1,11 +1,19 @@
 // Code generation script for sastocols.  Takes a variable definition
 // file in json format and generates code for bucketing and
-// columnizing a SAS file containing such variables.  This script is
-// run automatically via the command:
+// columnizing a set of SAS files, each of which contains the
+// variables as described in the variable definition file.
 //
-// go generate procsas.go
-
-// +build ignore
+// To generate a go script, run this script as follows:
+//
+// go run gen.go vdefs.json > sastocols.go
+//
+// The resulting sastocols.go script is a Go script that can be run
+// as follows:
+//
+// go run sastocols.go config.json
+//
+// where config.json is a configuration script as in
+// github.com/kshedden/goclaims/config
 
 package main
 

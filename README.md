@@ -2,38 +2,44 @@ Convert SAS files to bucketed columnized files
 ==============================================
 
 Suppose we are given a collection of large SAS files having a common
-set of variables (optionally, some variables may be missing in some of
-the files).  The goal is to produce a directory layout like this
-containing all of the SAS file data:
+set of variables (optionally, some variables may be absent from some
+of the files).  The goal is to produce a directory layout containing
+all of the SAS file data like this:
 
 ```
 Project
 |------Buckets/
 |      |-------0001/
-|      |       |--------Var1.bin.sz
-|      |       |--------Var2.bin.sz
-|      |       |--------Var3.bin.sz
-|      |       |--------dtypes.json
+|      |       |-------Var1.bin.sz
+|      |       |-------Var2.bin.sz
+|      |       |-------Var3.bin.sz
+|      |       |-------dtypes.json
 |      |-------0002/
-|      |       |--------Var1.bin.sz
-|      |       |--------Var2.bin.sz
-|      |       |--------Var3.bin.sz
-|      |       |--------dtypes.json
+|      |       |-------Var1.bin.sz
+|      |       |-------Var2.bin.sz
+|      |       |-------Var3.bin.sz
+|      |       |-------dtypes.json
 ```
 
 The files name prefixes Var1, Var2, etc. are the variable names from
-the SAS files.  The number of "buckets" (two in the example above) is
-configurable by the user.
+the SAS files.  The number of "buckets" (e.g. two in the example
+above) is configurable by the user.
 
 Rows from the SAS files are mapped into the buckets using an id
 variable.  The id variable is hashed to determine the bucket for a
 given row of data.  All rows with the same id are sent to the same
 bucket.  The data within each bucket are sorted by id, and within id
-levels can optionally be sorted by a specified time or index variable.
+levels the data can optionally be sorted by a specified time or index
+variable.
 
 The variables can be converted from their SAS type to any Go type when
-forming the buckets.  String variables whose values are "factors" can
-be converted to Go uvarint values for better compression.
+forming the buckets.  Go types are native integer, floating point, and
+string values, so it is relatively easy to process these data from any
+programming language.
+
+String variables whose values are "factors" can be converted to Go
+[uvarint](https://golang.org/pkg/encoding/binary/#Uvarint) values for
+better compression.
 
 The `dtypes.json` file contains a json-formatted map from string
 variable names to string data types (using Go type names), for
@@ -44,7 +50,7 @@ example:
 ```
 
 The data construction pipeline involves three steps, controlled by a
-configuration files described in the next section.
+configuration file described in the next section.
 
 Configuration
 -------------
@@ -112,13 +118,14 @@ factorize
 ---------
 
 `factorize` is used to convert strings to integer factor codes.  It is
-mainly useful for string variables that have a small to moderate
-number of distinct values, or that have a large number of distinct
-values but where a small subset of the values are much more common
-than the others.  The factor codes are represented as `uvarint` value
-which can be converted to integers.  A `map[string]int` mapping the
-string values to their integer values is written (in json-format) to
-the `CodesDir` directory.
+mainly useful when the variable has a small to moderate number of
+distinct values, or when there is a large number of distinct values
+but a small subset of these values are much more common than the
+others.  The factor codes are represented as `uvarint` values that can
+be easily converted to standard fixed-width integers.  A
+`map[string]int` mapping the string values to their integer values is
+written (in json-format) to the `CodesDir` directory specified in the
+configuration file.
 
 A group of variables can be factorized together, meaning that they
 will share the same code dictionary.

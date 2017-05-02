@@ -60,13 +60,13 @@ The basic idea implemented here is inspired by the
 [bcolz](https://github.com/Blosc/bcolz) Python project and the
 [feather](https://blog.rstudio.org/2016/03/29/feather) columnar data
 container, but there are a few key differences.  A major goal here is
-to support "long format" data such as adminstrative records in which
+to support "long format" data such as administrative records in which
 each subject has multiple data records.  It is strongly desirable that
 those records be stored adjacently on disk (the records for one
 subject are usually not adjacent in the original SAS files).  We
 accomplish this by defining the buckets based on a hash function
 applied to the id variable.  The use of a sequence variable further
-faciliates longitudinal analyses of these datasets.
+facilitates longitudinal analyses of these datasets.
 
 The main use-case for this data layout is to support analyses that
 require one or more "full table scans", where the processing of
@@ -245,5 +245,8 @@ TODO
 * The id variable must have SAS type float and Go type uint64.  It may
   or may not be desirable to allow this to be more configurable.
 
-* The sequence variable is currently mandatory, it could be made
-  optional.
+* The sequence variable is currently mandatory and must have type
+  `uint16`, it could be made optional or allowed to have other types.
+
+* We only support unsigned Go integer types, it would be easy to add
+  support for signed integer types.

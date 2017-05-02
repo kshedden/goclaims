@@ -3,8 +3,9 @@ Convert SAS files to bucketed columnized files
 
 Suppose we are given a collection of large SAS files having a common
 set of variables (optionally, some variables may be absent from some
-of the files).  The goal is to produce a directory layout containing
-all the data obtained from the SAS files like this:
+of the files).  Our goal here is to produce a directory layout
+containing all the data obtained from the SAS files, organized like
+this:
 
 ```
 Project

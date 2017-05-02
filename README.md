@@ -53,8 +53,8 @@ example:
 The data construction pipeline involves three steps, controlled by a
 configuration file described in the next section.
 
-Related work
-------------
+Design goals, use-cases and related work
+----------------------------------------
 
 The basic idea implemented here is inspired by the
 [bcolz](https://github.com/Blosc/bcolz) Python project and the
@@ -62,11 +62,23 @@ The basic idea implemented here is inspired by the
 container, but there are a few key differences.  A major goal here is
 to support "long format" data such as adminstrative records in which
 each subject has multiple data records.  It is strongly desirable that
-those records be stored adjacently on disk, even though the records
-for one subject may be non-adjacent in the original SAS files.  We
+those records be stored adjacently on disk (the records for one
+subject are usually not adjacent in the original SAS files).  We
 accomplish this by defining the buckets based on a hash function
 applied to the id variable.  The use of a sequence variable further
 faciliates longitudinal analyses of these datasets.
+
+The main use-case for this data layout is to support analyses that
+require one or more "full table scans", where the processing of
+different subjects can be done concurrently.  It is easy to write code
+that "walks through" each bucket, processing the (adjacent) records
+for each subject in sequence.  These "walking" processes can be run
+concurrently over the buckets.
+
+The construction of the data described here is intended to be
+efficient for large SAS files, making extensive use of concurrent
+processing.  For example, around 3TB of SAS files can be reduced to
+around 200GB of data in around 15 hours on a single workstation.
 
 Configuration
 -------------
@@ -223,3 +235,15 @@ is possible.
 
 __qperson__: Query function, returns all data for a given value of the
 bucketing id variable.
+
+TODO
+----
+
+* We have done a fair amount of incidental testing, but we do not have
+  a robust set of unit tests.
+
+* The id variable must have SAS type float and Go type uint64.  It may
+  or may not be desirable to allow this to be more configurable.
+
+* The sequence variable is currently mandatory, it could be made
+  optional.

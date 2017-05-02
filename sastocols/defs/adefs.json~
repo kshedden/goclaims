@@ -1,5 +1,0 @@
-{"Name": "Enrolid", "GoType": "uint64", "SASType": "float64", "Type": "uint64", "Must": true}
-{"Name": "Year", "GoType": "uint16", "SASType": "float64", "Type": "uint16", "Must": true}
-{"Name": "Memdays", "GoType": "uint16", "SASType": "float64", "Type": "uint16", "Must": true}
-{"Name": "Wgtkey", "GoType": "uint8", "SASType": "float64", "Must": false}
-{"Name": "MSwgtkey", "GoType": "uint8", "SASType": "string", "Must": false}

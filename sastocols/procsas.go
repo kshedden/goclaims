@@ -6,7 +6,7 @@ value of a bucketing variable (currently must be "ENROLID").  All
 records with a given value of the bucketing variable are guaranteed to
 be placed into the same bucket.
 
-Within each bucket, the variables are stored as gzip-compressed
+Within each bucket, the variables are stored as snappy-compressed
 columns, in various native data formats.  A json file describing the
 columns is placed into each bucket directory.
 
@@ -17,7 +17,7 @@ odefs.json for an example variable description file.
 TODO: Bucketing variable (enrolid) is not configurable.
 */
 
-package sastocols
+package XXXXXXXX
 
 import (
 	"encoding/binary"
@@ -31,8 +31,6 @@ import (
 	"github.com/kshedden/datareader"
 	"github.com/kshedden/goclaims/config"
 )
-
-//go:generate go run gen.go ../defs/odefs.json
 
 const (
 	// Maximum number of simultaneous goroutines.
@@ -177,6 +175,7 @@ func setup() {
 	for i, _ := range buckets {
 		buckets[i] = new(Bucket)
 		buckets[i].BucketNum = uint32(i)
+		buckets[i].Conf = conf
 	}
 
 	err := os.MkdirAll(conf.TargetDir, 0755)
@@ -235,4 +234,6 @@ func Run(cnf *config.Config, lgr *log.Logger) {
 	for k := 0; k < int(conf.NumBuckets); k++ {
 		buckets[k].Flush()
 	}
+
+	logger.Printf("All done")
 }

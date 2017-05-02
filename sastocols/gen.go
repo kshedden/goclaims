@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"go/format"
 	"os"
+	"path"
 	"text/template"
 
 	"github.com/kshedden/goclaims/config"
@@ -26,6 +27,8 @@ const (
 // tvals contains values that are to be insterted into the code
 // template.
 type tvals struct {
+	Ftype    string
+	Rtypes   []string
 	Dtypes   string
 	NameType []*config.VarDesc
 }
@@ -52,18 +55,23 @@ func getdtypes(nametype []*config.VarDesc) string {
 
 func main() {
 
-	if len(os.Args) != 2 {
+	if len(os.Args) != 3 {
 		panic("wrong number of arguments")
 	}
 
-	vdesca := config.GetVarDefs(os.Args[1])
+	ftype := os.Args[1]
+	vdesca := config.GetVarDefs(os.Args[2])
 
 	tmpl, err := template.ParseFiles(templateName)
 	if err != nil {
 		panic(err)
 	}
 
+	rtypes := []string{"uint8", "uint16", "uint32", "uint64", "float32", "float64"}
+
 	tval := &tvals{
+		Ftype:    ftype,
+		Rtypes:   rtypes,
 		NameType: vdesca,
 		Dtypes:   getdtypes(vdesca),
 	}
@@ -79,7 +87,8 @@ func main() {
 		panic(err)
 	}
 
-	out, err := os.Create("generated_defs.go")
+	fp := path.Join(ftype+"files", "generated_defs.go")
+	out, err := os.Create(fp)
 	if err != nil {
 		panic(err)
 	}

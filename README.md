@@ -114,6 +114,21 @@ The fields of each row of the variable description file are as follows:
   present in each file.  If true, the conversion will stop if the
   variable is missing in any of the SAS files
 
+To build a go program to perform the conversions, run the `gen.go`
+script in the `sastocols` directory, passing in a variable definition
+file (e.g. `defs.json` below) formatted as described above:
+
+```
+go run gen.go defs.json > sastocols.go
+```
+
+Now you will have a go script (called here `sastocols.go`) that you
+can run as follows:
+
+```
+go run sastocols.go config.json
+```
+
 factorize
 ---------
 
@@ -130,8 +145,21 @@ configuration file.
 A group of variables can be factorized together, meaning that they
 will share the same code dictionary.
 
+To perform the factorization, use the following shell command
+
+```
+factorize run prefix config1.json config2.json...
+```
+
+Here, `prefix` defines which variables will be factorized as a group
+(i.e. using the same set of integer codes).  For example, if prefix is
+"ABX", then all variables beginning with "ABX" (e.g. ABX1, ABXZ, etc.)
+will be jointly factorized.  The `config` files are `gosascols`
+configuration file as described above, describing the databases that
+are to be jointly factorized.
+
 Since factorize modifies the `dtypes.json` file, do not run multiple
-factorize scripts on the database simultaneously.
+factorize scripts on a database simultaneously.
 
 sortbuckets
 -----------
@@ -139,3 +167,12 @@ sortbuckets
 `sortbuckets` is the final step of the pipeline.  It sorts the data
 within each bucket first by the values of the id variable, and
 optionally within id levels by a sequence variable (e.g. time).
+
+To perform the sorting, use the following shell command:
+
+```
+sortbuckets config.json idvar timevar run
+```
+
+Here, `idvar` and `timevar` are the names of the id variable and
+sequence variable, respectively.

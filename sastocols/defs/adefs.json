@@ -1,3 +1,4 @@
+{"Name": "Dobyr", "GoType": "uint16", "SASType": "float64", "Must": true}
 {"Name": "Egeoloc", "GoType": "uint8", "SASType": "string", "Must": true}
 {"Name": "Emprel", "GoType": "uint8", "SASType": "string", "Must": true}
 {"Name": "Enrolid", "GoType": "uint64", "SASType": "float64", "Type": "uint64", "Must": true}

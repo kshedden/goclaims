@@ -1,10 +1,18 @@
-package sastocols
+package {{ .Ftype }}files
 
 import (
     "strings"
     "strconv"
     "fmt"
+    "sync"
+    "io"
+    "path"
+    "os"
+    "encoding/binary"
+
+    "github.com/golang/snappy"
     "github.com/kshedden/datareader"
+    "github.com/kshedden/goclaims/config"
 )
 
 var (
@@ -45,13 +53,13 @@ type chunk struct {
 // Add appends a rec to the end of the Bucket.
 func (bucket *Bucket) Add(r *rec) {
 
-	bucket.mut.Lock()
+	bucket.Mut.Lock()
 
 {{ range .NameType }}
     bucket.{{ .Name }} = append(bucket.{{ .Name }}, r.{{  .Name }})
 {{- end }}
 
-	bucket.mut.Unlock()
+	bucket.Mut.Unlock()
 
 	if uint64(len(bucket.Enrolid)) > conf.BufMaxRecs {
 		bucket.Flush()
@@ -63,14 +71,14 @@ func (bucket *Bucket) Flush() {
 
 	logger.Printf("Flushing bucket %d", bucket.BucketNum)
 
-	bucket.mut.Lock()
+	bucket.Mut.Lock()
 
 {{ range .NameType }}
 	bucket.flush{{ .GoType }}("{{ .Name }}", bucket.{{ .Name }})
 	bucket.{{ .Name }} = bucket.{{ .Name }}[0:0]
 {{- end }}
 
-	bucket.mut.Unlock()
+	bucket.Mut.Unlock()
 }
 
 
@@ -141,3 +149,76 @@ func (c *chunk) trynextrec() (*rec, bool) {
 
 	return r, true
 }
+
+
+type BaseBucket struct {
+
+	// The number of the bucket, corresponds to the file name in
+	// the Buckets directory.
+	BucketNum uint32
+
+	// Locks for accessing the bucket's data.
+	Mut sync.Mutex
+
+	Conf *config.Config
+}
+
+// openfile opens a file for appending data in the bucket's directory.
+func (bucket *BaseBucket) openfile(varname string) (io.Closer, io.WriteCloser) {
+
+	bp := config.BucketPath(int(bucket.BucketNum), bucket.Conf)
+	fn := path.Join(bp, varname+".bin.sz")
+	fid, err := os.OpenFile(fn, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		panic(err)
+	}
+
+	gid := snappy.NewBufferedWriter(fid)
+
+	return fid, gid
+}
+
+func (bucket *BaseBucket) flushstring(varname string, vec []string) {
+
+	toclose, wtr := bucket.openfile(varname)
+
+	for _, x := range vec {
+		_, err := wtr.Write([]byte(x + "\n"))
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	err := wtr.Close()
+	if err != nil {
+ 	        panic(err)
+        }
+	err = toclose.Close()
+	if err != nil {
+                panic(err)
+        }
+}
+
+
+{{- range .Rtypes }}
+func (bucket *BaseBucket) flush{{ . }}(varname string, vec []{{ . }}) {
+
+	toclose, wtr := bucket.openfile(varname)
+
+	for _, x := range vec {
+		err := binary.Write(wtr, binary.LittleEndian, x)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	err := wtr.Close()
+	if err != nil {
+                panic(err)
+        }
+	err = toclose.Close()
+	if err != nil {
+                panic(err)
+        }
+}
+{{- end }}

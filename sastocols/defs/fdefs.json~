@@ -1,0 +1,17 @@
+{"Name": "Enrolid", "GoType": "uint64", "SASType": "float64", "Must": true}
+{"Name": "Svcdate", "GoType": "uint16", "SASType": "float64", "Must": true}
+{"Name": "Dx1", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Dx2", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Dx3", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Dx4", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Dx5", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Dx6", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Dx7", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Dx8", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Dx9", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Proc1", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Proc2", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Proc3", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Proc4", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Proc5", "GoType": "string", "SASType": "string", "Must": true}
+{"Name": "Proc6", "GoType": "string", "SASType": "string", "Must": true}

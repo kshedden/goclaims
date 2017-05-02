@@ -28,9 +28,9 @@ above) is configurable by the user.
 Rows from the SAS files are mapped into the buckets using an id
 variable.  The id variable is hashed to determine the bucket for a
 given row of data.  All rows with the same id are sent to the same
-bucket.  The data within each bucket are sorted by id, and within id
-levels the data can optionally be sorted by a specified time or index
-variable.
+bucket.  The data within each bucket are sorted by id, and within an
+id level the data are sorted by a specified sequence variable
+(e.g. time).
 
 The variables can be converted from their SAS type to any Go type when
 forming the buckets.  Go types are native integer, floating point, and
@@ -53,10 +53,25 @@ example:
 The data construction pipeline involves three steps, controlled by a
 configuration file described in the next section.
 
+Related work
+------------
+
+The basic idea implemented here is inspired by the
+[bcolz](https://github.com/Blosc/bcolz) Python project and the
+[feather](https://blog.rstudio.org/2016/03/29/feather) columnar data
+container, but there are a few key differences.  A major goal here is
+to support "long format" data such as adminstrative records in which
+each subject has multiple data records.  It is strongly desirable that
+those records be stored adjacently on disk, even though the records
+for one subject may be non-adjacent in the original SAS files.  We
+accomplish this by defining the buckets based on a hash function
+applied to the id variable.  The use of a sequence variable further
+faciliates longitudinal analyses of these datasets.
+
 Configuration
 -------------
 
-The pipeline is configured using a json formatted configuration file.
+The pipeline is configured using a json-formatted configuration file.
 The configuration file contains the following parameters:
 
 * __Sourcedir__: The directory prefix for all SAS files to be

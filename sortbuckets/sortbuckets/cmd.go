@@ -7,8 +7,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/kshedden/goclaims/config"
-	"github.com/kshedden/goclaims/sortbuckets"
+	"github.com/kshedden/gosascols/config"
+	"github.com/kshedden/gosascols/sortbuckets"
 )
 
 var (

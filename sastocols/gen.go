@@ -13,7 +13,7 @@
 // go run sastocols.go config.json
 //
 // where config.json is a configuration script as in
-// github.com/kshedden/goclaims/config
+// github.com/kshedden/gosascols/config
 
 package main
 
@@ -24,7 +24,7 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/kshedden/goclaims/config"
+	"github.com/kshedden/gosascols/config"
 )
 
 // tvals contains values that are to be insterted into the code

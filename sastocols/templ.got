@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kshedden/goclaims/config"
+	"github.com/kshedden/gosascols/config"
 	"github.com/kshedden/datareader"
 	"github.com/golang/snappy"
 )

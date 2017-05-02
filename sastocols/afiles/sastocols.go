@@ -15,7 +15,7 @@ import (
 
 	"github.com/golang/snappy"
 	"github.com/kshedden/datareader"
-	"github.com/kshedden/goclaims/config"
+	"github.com/kshedden/gosascols/config"
 )
 
 var (

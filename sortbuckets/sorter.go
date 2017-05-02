@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	"github.com/golang/snappy"
-	"github.com/kshedden/goclaims/config"
+	"github.com/kshedden/gosascols/config"
 )
 
 const (

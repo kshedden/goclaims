@@ -7,8 +7,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/kshedden/goclaims/config"
-	"github.com/kshedden/goclaims/factorize"
+	"github.com/kshedden/gosascols/config"
+	"github.com/kshedden/gosascols/factorize"
 )
 
 func StandardizeICD9(code string) string {

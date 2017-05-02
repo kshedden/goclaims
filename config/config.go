@@ -24,6 +24,9 @@ type Config struct {
 	// Results are written here
 	TargetDir string
 
+	// The directory where factor codes are stored
+	CodesDir string
+
 	// Read this number of rows at a time from the SAS files
 	SASChunkSize uint64
 
@@ -40,7 +43,7 @@ type Config struct {
 
 var (
 	// Size in bytes of each data type.
-	DTsize = map[string]int{"uint8": 1, "uint16": 2, "uint32": 4, "uint64": 8}
+	DTsize = map[string]int{"uint8": 1, "uint16": 2, "uint32": 4, "uint64": 8, "float32": 4, "float64": 8}
 )
 
 // ReadConfig returns the configuration information stored at the
@@ -97,10 +100,12 @@ func ReadDtypes(bucket int, conf *Config) map[string]string {
 // factor-coded variable.
 func ReadFactorCodes(varname string, conf *Config) map[string]int {
 
-	fn := path.Join(conf.TargetDir, varname+".json")
+	fn := path.Join(conf.CodesDir, varname+".json")
 	fid, err := os.Open(fn)
 	if err != nil {
-		panic(err)
+		msg := fmt.Sprintf("Can't open codes file %s\n", fn)
+		os.Stderr.WriteString(msg)
+		os.Exit(1)
 	}
 	defer fid.Close()
 

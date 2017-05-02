@@ -85,11 +85,11 @@ processing.  For example, around 3TB of SAS files can be reduced to
 around 200GB of data in around 15 hours on a single workstation.
 
 The SAS files are read using a [native Go SAS
-reader](github.com/kshedden/datareader), therefore SAS software is not
-required to carry out this pipeline.  The native Go SAS reader has
-been tested on many examples and found to give accurate results.
-However the SAS file specification is not public so it is not possible
-to know that the results will be accurate in every case.
+reader](https://github.com/kshedden/datareader), therefore SAS
+software is not required to run this pipeline.  The native Go SAS
+reader has been tested on many examples and found to give accurate
+results.  However the SAS file specification is not public so it is
+not possible to know that the results will be accurate in every case.
 
 Configuration
 -------------

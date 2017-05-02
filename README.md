@@ -1,9 +1,9 @@
 Convert SAS files to bucketed columnized files
 ----------------------------------------------
 
-Suppose we are given a collection of large SAS files with a common set
-of variables (optionally, some variables may be missing in some of the
-files).  The goal is to produce a directory layout like this
+Suppose we are given a collection of large SAS files having a common
+set of variables (optionally, some variables may be missing in some of
+the files).  The goal is to produce a directory layout like this
 containing all of the SAS file data:
 
 ```
@@ -22,24 +22,21 @@ Project
 ```
 
 The files name prefixes Var1, Var2, etc. are the variable names from
-the SAS files (SAS variable names are not case-sensitive, we use title
-case).  The number of "buckets" (two in the example above) is
+the SAS files.  The number of "buckets" (two in the example above) is
 configurable by the user.
 
 Rows from the SAS files are mapped into the buckets using an id
 variable.  The id variable is hashed to determine the bucket for a
 given row of data.  All rows with the same id are sent to the same
-bucket.  The data within each bucket are sorted by id, and optionally
-by a specified "time" variable.
+bucket.  The data within each bucket are sorted by id, and within id
+levels can optionally be sorted by a specified time or index variable.
 
-SAS variables must have type SAS type float or string.  The variables
-can be converted to any Go type when forming the buckets.  String
-variables whose values are "factors" (i.e. are drawn from a
-dictionary) can be converted to Go uvarint values for better
-compression.
+The variables can be converted from their SAS type to any Go type when
+forming the buckets.  String variables whose values are "factors" can
+be converted to Go uvarint values for better compression.
 
 Configuration
-=============
+-------------
 
 The pipeline is configured using a json formatted configuration file.
 The configuration files contains the following parameters:
@@ -66,7 +63,7 @@ per bucket, before flushing the bucket to disk.
 chunks are read (used for debugging and testing).
 
 sastocols
-=========
+---------
 
 sastocols copies the data from the SAS files into the bucket layout
 described above.  It is the first step in a threee-step pipeline.  It
@@ -99,10 +96,20 @@ The fields of each row of the variable description file are as follows:
   variable is missing in any of the SAS files.
 
 factorize
-=========
+---------
 
-
-
+`factorize` is used to convert strings to integer factor codes.  It is
+mainly useful for string variables that have a small to moderate
+number of distinct values, or that have a large number of distinct
+values but where a small subset of the values are much more common
+than the others.  The factor codes are represented as `uvarint` value
+which can be converted to integers.  A `map[string]int` mapping the
+string values to their integer values is written (in json-format) to
+the `CodesDir` directory.
 
 sortbuckets
-===========
+-----------
+
+`sortbuckets` is the final step of the pipeline.  It sorts the data
+within each bucket first by the values of the id variable, and
+optionally within id levels by a sequence variable (e.g. time).

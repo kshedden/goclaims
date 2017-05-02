@@ -185,8 +185,26 @@ optionally within id levels by a sequence variable (e.g. time).
 To perform the sorting, use the following shell command:
 
 ```
-sortbuckets config.json idvar timevar run
+sortbuckets run idvar timevar config.json
 ```
 
 Here, `idvar` and `timevar` are the names of the id variable and
 sequence variable, respectively.
+
+If `cleanbuckets` has not been run, the sorting can be reverted as
+follows:
+
+```
+sortbuckets revert idvar timevar config.json
+```
+
+Other tools
+-----------
+
+__cleanbuckets__: After the pipeline is complete, this script can be
+run to remove any temporary files from the bucket storage area.  After
+running `cleanbuckets` no reversion of the factorize or sorting steps
+is possible.
+
+__qperson__: Query function, returns all data for a given value of the
+bucketing id variable.

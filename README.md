@@ -95,7 +95,7 @@ not possible to know that the results will be accurate in every case.
 Configuration
 -------------
 
-The pipeline is configured using a json-formatted configuration file.
+The pipeline is configured using a toml-formatted configuration file.
 The configuration file contains the following parameters:
 
 * __Sourcedir__: The directory prefix for all SAS files to be
@@ -190,7 +190,7 @@ will share the same code dictionary.
 To perform the factorization, use the following shell command
 
 ```
-factorize run prefix config1.json config2.json...
+factorize run prefix config1.toml config2.toml...
 ```
 
 Here, `prefix` defines which variables will be factorized as a group
@@ -208,7 +208,7 @@ factorization can be reverted (i.e. the uvarint values are converted
 back to their string values) using the command
 
 ```
-factorize revert prefix config1.json config2.json...
+factorize revert prefix config1.toml config2.toml...
 ```
 
 Note that reversion is not possible after `sortbuckets` (below) has
@@ -224,7 +224,7 @@ optionally within id levels by a sequence variable (e.g. time).
 To perform the sorting, use the following shell command:
 
 ```
-sortbuckets run idvar timevar config.json
+sortbuckets run idvar timevar config.toml
 ```
 
 Here, `idvar` and `timevar` are the names of the id variable and
@@ -234,7 +234,7 @@ If `cleanbuckets` has not been run, the sorting can be reverted as
 follows:
 
 ```
-sortbuckets revert idvar timevar config.json
+sortbuckets revert idvar timevar config.toml
 ```
 
 Other tools

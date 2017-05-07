@@ -26,9 +26,9 @@ Each file contains a raw stream of binary data values, with no header
 or metadata (type metadata is placed in the dtypes.json file).  The
 exception to this is that string values are delimited by newlines.
 
-The files name prefixes Var1, Var2, etc. are the variable names from
-the SAS files.  The number of "buckets" (e.g. two in the example
-above) is configurable by the user.
+The filename prefixes Var1, Var2, etc. are the variable names from the
+SAS files.  The number of "buckets" (e.g. two in the example above) is
+configurable by the user.
 
 Rows from the SAS files are mapped into the buckets using an id
 variable.  The id variable is hashed to determine the bucket for a
@@ -39,8 +39,8 @@ levels of the id variable, the data are sorted by a sequence variable
 
 The variables can be converted from their SAS type to any Go type when
 forming the buckets.  Go types are native integer, floating point, and
-string values, so it is easy to process these data from any
-programming language (numeric types are always written in little
+string values, so it is easy to process these data using most
+programming languages (numeric types are always written in little
 endian form).
 
 String variables whose values are "factors" can be converted to Go
@@ -56,7 +56,7 @@ example:
 ```
 
 The data construction pipeline involves three steps, controlled by a
-configuration file described in the next section.
+configuration file described below.
 
 Design goals, use-cases and related work
 ----------------------------------------
@@ -172,11 +172,11 @@ go run sastocols.go config.json
 factorize
 ---------
 
-`factorize` is used to convert strings to integer factor codes
-(represented on disk as uvarint value).  Doing this is mainly useful
-for a variable that has a small to moderate number of distinct values,
-or when there is a large number of distinct values but a small subset
-of these values are much more common than the others.
+The factorize command is used to convert strings to integer factor
+codes (represented on disk as uvarint values).  Doing this is mainly
+useful for a variable that has a small to moderate number of distinct
+values, or when there is a large number of distinct values but a small
+subset of these values are much more common than the others.
 
 The factor codes are represented on-disk as `uvarint` values that can
 be easily converted to standard fixed-width integers when reading into

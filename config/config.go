@@ -8,9 +8,12 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
@@ -57,8 +60,12 @@ func ReadConfig(filename string) *Config {
 		panic(err)
 	}
 	defer fid.Close()
-	dec := json.NewDecoder(fid)
-	err = dec.Decode(&config)
+	td, err := ioutil.ReadAll()
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = toml.Decode(td, &config)
 	if err != nil {
 		panic(err)
 	}

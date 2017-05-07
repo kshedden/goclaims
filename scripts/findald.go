@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kshedden/goclaims/config"
+	"github.com/kshedden/gosascols/config"
 	"github.com/kshedden/statmodel/dataprovider"
 )
 
@@ -30,7 +30,12 @@ const (
 type rec struct {
 	numer     [][]int
 	denom     [][]int
-	cirrhosis []uint64
+	cirrhosis []crec
+}
+
+type crec struct {
+	enrolid uint64
+	nclaim  []int
 }
 
 var (
@@ -81,13 +86,25 @@ var (
 		"30543", "30550", "30551", "30552", "30553", "30560",
 		"30561", "30562", "30563", "30570", "30571", "30572",
 		"30573", "30580", "30581", "30582", "30583", "30590",
-		"30591", "30592", "30593"}
+		"30591", "30592", "30593", "F10159", "F1014",
+		"F10239", "F10921", "F10959", "F10221", "F10182",
+		"F10259", "F10280", "F10250", "F1097", "F10229",
+		"F1029", "F10129", "F10120", "F10150", "F10982",
+		"F10281", "F10231", "F10230", "F1021", "F1027",
+		"F10981", "F10980", "F10951", "F1026", "F10950",
+		"F10188", "F10251", "F1094", "F10151", "F10181",
+		"F10920", "F10288", "F10282", "F1024", "F1099",
+		"F10121", "F10232", "F10988", "F10220", "F1010",
+		"F1020", "F10180", "F10929", "F1096", "F1019",
+		"K7010", "K7011", "K7041", "K7030", "K7020", "K7000",
+		"K7090", "K7031", "K7040"}
 
-	CirrhosisCodes = []string{"57120", "57150"}
+	CirrhosisCodes = []string{"57120", "57150", "K7460", "K7469", "K7030", "K7031"}
 
 	CirrhosisComorbidCodes = []string{"57240", "57220", "45600",
-		"45620", "45610", "45621", "56723", "78959",
-		"57230"}
+		"45620", "45610", "45621", "56723", "78959", "57230",
+		"K7670", "K7291", "I8501", "I8511", "K6520", "R1880",
+		"K7151", "K7660"}
 )
 
 func matchset(x []uint64, y uint64) bool {
@@ -157,7 +174,7 @@ func dobucket(k int) {
 	numer1 := make([]int, len(td))
 	denom1 := make([]int, len(td))
 
-	var cirrhosis []uint64
+	var cirrhosis []crec
 
 	abp := config.BucketPath(k, aconf)
 	obp := config.BucketPath(k, oconf)
@@ -261,6 +278,7 @@ func dobucket(k int) {
 		// First check for the main cirrhosis codes to see if this is a case
 		dx := false
 		ald := false
+		ccnt := make([]int, len(dix)-1)
 		for j, vb := range dix {
 
 			if vb == "A" || !wk.Status[j] {
@@ -286,6 +304,7 @@ func dobucket(k int) {
 					// Check for cirrhosis
 					if matchset(icodes[0], y) {
 						dx = true
+
 						if carryforward {
 							for j := yr; j < len(numer1); j++ {
 								numer1[j] = denom1[j]
@@ -295,6 +314,17 @@ func dobucket(k int) {
 								numer1[yr] = denom1[yr]
 							}
 						}
+
+						fl := false
+						for _, x := range numer1 {
+							if x > 0 {
+								fl = true
+							}
+						}
+						if fl {
+							ccnt[j-1]++
+						}
+
 					}
 
 					// Check for ALD
@@ -314,7 +344,7 @@ func dobucket(k int) {
 			continue
 		}
 
-		cirrhosis = append(cirrhosis, aenrolid[0])
+		cirrhosis = append(cirrhosis, crec{aenrolid[0], ccnt})
 
 		// Check the cirrhosis comorbidity codes to possibly backdate the diagosis
 		for j, vb := range dix {
@@ -406,7 +436,7 @@ func harvest() {
 		den[k] = make([]int, len(td))
 	}
 
-	cir := make(map[uint64]bool)
+	cx := make(map[uint64][]int)
 
 	// Collect data from all buckets
 	for r := range rslt {
@@ -418,7 +448,7 @@ func harvest() {
 		}
 
 		for _, x := range r.cirrhosis {
-			cir[x] = true
+			cx[x.enrolid] = x.nclaim
 		}
 	}
 
@@ -428,9 +458,12 @@ func harvest() {
 		panic(err)
 	}
 	defer fid.Close()
-	for id, _ := range cir {
-		m := fmt.Sprintf("%d\n", id)
-		_, err := fid.Write([]byte(m))
+	for id, c := range cx {
+		m := []string{fmt.Sprintf("%d", id)}
+		for _, x := range c {
+			m = append(m, fmt.Sprintf("%d", x))
+		}
+		_, err := fid.Write([]byte(strings.Join(m, ",") + "\n"))
 		if err != nil {
 			panic(err)
 		}

@@ -57,16 +57,19 @@ func ReadConfig(filename string) *Config {
 
 	fid, err := os.Open(filename)
 	if err != nil {
+		os.Stderr.WriteString(fmt.Sprintf("Opening %s\n", filename))
 		panic(err)
 	}
 	defer fid.Close()
-	td, err := ioutil.ReadAll()
+	td, err := ioutil.ReadAll(fid)
 	if err != nil {
+		os.Stderr.WriteString(fmt.Sprintf("Reading %s\n", filename))
 		panic(err)
 	}
 
-	_, err = toml.Decode(td, &config)
+	_, err = toml.Decode(string(td), &config)
 	if err != nil {
+		os.Stderr.WriteString(fmt.Sprintf("Reading %s\n", filename))
 		panic(err)
 	}
 

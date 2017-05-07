@@ -5,6 +5,6 @@ SASFiles = ["2009/ccaei093.sas7bdat", "2010/ccaei103.sas7bdat", "2011/ccaei113.s
 TargetDir = "/nfs/turbo/ihpi-dads/CSCAR/MarketScan/I"
 CodesDir = "/nfs/turbo/ihpi-dads/CSCAR/MarketScan/Codes"
 SASChunkSize = 1000000
-NumBuckets = 100,
+NumBuckets = 100
 BufMaxRecs = 500000
 MaxChunk = 0

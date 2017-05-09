@@ -1,0 +1,77 @@
+[[Variable]]
+  Name = "Dobyr"
+  GoType = "uint16"
+  SASType = "float64"
+  Must = true
+
+[[Variable]]
+  Name = "Egeoloc"
+  GoType = "uint8"
+  SASType = "string"
+  Must = true
+
+[[Variable]]
+  Name = "Emprel"
+  GoType = "uint8"
+  SASType = "string"
+  Must = true
+
+[[Variable]]
+  Name = "Enrolid"
+  GoType = "uint64"
+  SASType = "float64"
+  Must = true
+
+[[Variable]]
+  Name = "Memdays"
+  GoType = "uint16"
+  SASType = "float64"
+  Must = true
+
+[[Variable]]
+  Name = "MSA"
+  GoType = "uint32"
+  SASType = "float64"
+  Must = true
+
+[[Variable]]
+  Name = "MSwgtkey"
+  GoType = "uint8"
+  SASType = "string"
+  Must = false
+
+[[Variable]]
+  Name = "Region"
+  GoType = "uint8"
+  SASType = "string"
+  Must = true
+
+[[Variable]]
+  Name = "Rx"
+  GoType = "uint8"
+  SASType = "string"
+  Must = true
+
+[[Variable]]
+  Name = "Seqnum"
+  GoType = "uint64"
+  SASType = "float64"
+  Must = true
+
+[[Variable]]
+  Name = "Sex"
+  GoType = "uint8"
+  SASType = "string"
+  Must = true
+
+[[Variable]]
+  Name = "Wgtkey"
+  GoType = "uint8"
+  SASType = "float64"
+  Must = false
+
+[[Variable]]
+  Name = "Year"
+  GoType = "uint16"
+  SASType = "float64"
+  Must = true

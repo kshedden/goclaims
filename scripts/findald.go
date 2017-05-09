@@ -17,7 +17,7 @@ const (
 	csize = 1000000
 
 	// Number of weight strata
-	nstrat = 65
+	nstrat = 33
 
 	// Exclude a person for one year if they do not have this many
 	// days of coverage in the year
@@ -155,12 +155,13 @@ func getwgtkey(adobyr uint16, asex uint8, aemprel uint8, aregion uint8, amsa uin
 	emprel -= 1
 
 	// msa (0=no msa, 1=msa)
-	var msa int
-	if amsa > 0 {
-		msa = 1
-	}
+	//var msa int
+	//if amsa > 0 {
+	//		msa = 1
+	//	}
 
-	return 1 + sex + 2*emprel + 4*msa + 8*age + 16*region
+	//return 1 + sex + 2*emprel + 4*msa + 8*age + 16*region
+	return 1 + sex + 2*emprel + 4*age + 8*region
 }
 
 func dobucket(k int) {
@@ -239,6 +240,10 @@ func dobucket(k int) {
 
 	datepos := []int{vpos[0]["Year"], vpos[1]["Svcdate"], vpos[2]["Svcdate"], vpos[3]["Admdate"], vpos[4]["Svcdate"]}
 	wk := dataprovider.NewWalk(data, []string{"Enrolid", "Enrolid", "Enrolid", "Enrolid", "Enrolid"})
+
+	//TEMP
+	var nx1 [7]int
+	var nx2 int
 
 	for wk.Next() {
 
@@ -377,6 +382,19 @@ func dobucket(k int) {
 			}
 		}
 
+		//TEMP
+		if denom1[len(denom1)-1] == 1 {
+			nx2++
+			for j := 0; j < 7; j++ {
+				for i := j; i < 7; i++ {
+					if numer1[i] == 1 {
+						nx1[j]++
+						break
+					}
+				}
+			}
+		}
+
 		for k, v := range numer1 {
 			numer[wgtkey][k] += int(v)
 		}
@@ -388,6 +406,9 @@ func dobucket(k int) {
 		cirrhosis: cirrhosis,
 	}
 	<-sem
+
+	fmt.Printf("%v\n", nx1)
+	fmt.Printf("%v\n", nx2)
 }
 
 func zero(x []int) {

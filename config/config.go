@@ -176,20 +176,23 @@ func GetVarDefs(filename string) []*VarDesc {
 	if err != nil {
 		panic(err)
 	}
-	defer fid.Close()
+	s, err := ioutil.ReadAll(fid)
+	if err != nil {
+		panic(err)
+	}
+	fid.Close()
 
-	var vdesca []*VarDesc
-	dec := json.NewDecoder(fid)
-	for dec.More() {
-		x := new(VarDesc)
-		err = dec.Decode(&x)
-		if err != nil {
-			panic(err)
-		}
-		vdesca = append(vdesca, x)
+	type vdesct struct {
+		Variable []*VarDesc
 	}
 
-	for _, v := range vdesca {
+	var vdesca vdesct
+	_, err = toml.Decode(string(s), &vdesca)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, v := range vdesca.Variable {
 		v.SASName = strings.ToUpper(v.Name)
 		v.SASTypeU = strings.Title(v.SASType)
 
@@ -198,5 +201,5 @@ func GetVarDefs(filename string) []*VarDesc {
 		}
 	}
 
-	return vdesca
+	return vdesca.Variable
 }

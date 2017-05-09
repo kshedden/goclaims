@@ -128,17 +128,19 @@ does not do any sorting or varint construction, its only job is to
 copy the data from the SAS files into the appropriate buckets,
 converting types as needed.  For performance reasons, a Go script is
 generated with static type information about the source and target
-files.  This script is generated based on a json-format variable
+files.  This script is generated based on a toml-format variable
 definition file, containing one line per variable.  The format of
 these lines is:
 
 ```
-{"Name": "Admtyp", "GoType": "uint8", "SASType": "string", "Must": true}
-{"Name": "Admdate", "GoType": "uint16", "SASType": "float64", "Must": true}
-{"Name": "Dx1", "GoType": "string", "SASType": "string", "Must": true}
+[[Variable]]
+  Name = "Income"
+  GoType = "uint64"
+  SASType = "float64"
+  Must = true
 ```
 
-The fields of each row of the variable description file are as follows:
+The elements of a variable description are as follows:
 
 * __Name__: the name of the variable in the SAS file.  SAS is not case
    sensitive for variable names, so the case does not need to match
@@ -156,17 +158,17 @@ The fields of each row of the variable description file are as follows:
 
 To build a go program to perform the conversions, run the `gen.go`
 script in the `sastocols` directory, passing in a variable definition
-file (e.g. `defs.json` below) formatted as described above:
+file (e.g. `defs.toml` below) formatted as described above:
 
 ```
-go run gen.go defs.json > sastocols.go
+go run gen.go defs.toml > sastocols.go
 ```
 
 Now you will have a go script (called here `sastocols.go`) that you
 can run as follows:
 
 ```
-go run sastocols.go config.json
+go run sastocols.go config.toml
 ```
 
 factorize

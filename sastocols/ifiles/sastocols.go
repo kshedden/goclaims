@@ -3,6 +3,7 @@ package main
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"hash/adler32"
 	"io"
@@ -170,6 +171,28 @@ func (c *chunk) nextrec() *rec {
 	return nil
 }
 
+func writeconfig() {
+
+	type Config struct {
+		NumBuckets  uint32
+		Compression string
+		CodesDir    string
+	}
+
+	c := Config{NumBuckets: conf.NumBuckets, Compression: "snappy", CodesDir: conf.CodesDir}
+
+	fid, err := os.Create(path.Join(conf.TargetDir, "conf.json"))
+	if err != nil {
+		panic(err)
+	}
+	defer fid.Close()
+	enc := json.NewEncoder(fid)
+	err = enc.Encode(c)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func setup() {
 
 	rslt_chan = make(chan *rec)
@@ -186,6 +209,8 @@ func setup() {
 	if err != nil {
 		panic(err)
 	}
+
+	writeconfig()
 
 	fn := path.Join(conf.TargetDir, "Buckets")
 	err = os.RemoveAll(fn)

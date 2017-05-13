@@ -27,8 +27,9 @@ var (
 	logger *log.Logger
 )
 
-func getfilenames(tp string) []string {
+func getfilenames(tp string) ([]string, []string) {
 	var files []string
+	vnames := make(map[string]bool)
 	for _, cnf := range conf {
 		for k := 0; k < int(cnf.NumBuckets); k++ {
 			px := config.BucketPath(k, cnf)
@@ -39,13 +40,20 @@ func getfilenames(tp string) []string {
 			for _, f := range fl {
 				fn := f.Name()
 				if strings.HasSuffix(fn, ".bin.sz") && !strings.HasSuffix(fn, "_string.bin.sz") && strings.HasPrefix(fn, tp) {
+					vname := strings.Replace(fn, ".bin.sz", "", 1)
+					vnames[vname] = true
 					files = append(files, path.Join(px, fn))
 				}
 			}
 		}
 	}
 
-	return files
+	var vn []string
+	for v, _ := range vnames {
+		vn = append(vn, v)
+	}
+
+	return files, vn
 }
 
 func setupLogger() {
@@ -106,7 +114,7 @@ func main() {
 		logger.Printf("Read config file from %s", f)
 	}
 
-	files := getfilenames(prefix)
+	files, vnames := getfilenames(prefix)
 
 	if strings.ToLower(os.Args[1]) == "revert" {
 		logger.Printf("Reverting to string values")
@@ -118,7 +126,9 @@ func main() {
 	logger.Printf("Processing %d files with prefix %s", len(files), prefix)
 
 	codefile := prefix + "Codes.json"
+	prefile := prefix + "CodeFiles.json"
 	codefile = path.Join(conf[0].CodesDir, codefile)
+	prefile = path.Join(conf[0].CodesDir, prefile)
 	os.MkdirAll(conf[0].CodesDir, 0755)
-	factorize.Run(files, StandardizeICD9, codefile, logger)
+	factorize.Run(files, StandardizeICD9, codefile, prefile, vnames, logger)
 }

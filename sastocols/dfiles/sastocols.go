@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Dobyr":"uint16","Egeoloc":"uint8","Emprel":"uint8","Enrolid":"uint64","MSA":"uint32","MSwgtkey":"uint8","Memdays":"uint16","Region":"uint8","Rx":"uint8","Seqnum":"uint64","Sex":"uint8","Wgtkey":"uint8","Year":"uint16"}
+	dtypes = `{"Enrolid":"uint64","Ndcnum":"string","Pay":"float32","Seqnum":"uint64","Svcdate":"uint16","Thergrp":"uint8"}
 `
 
 	wg  sync.WaitGroup
@@ -269,19 +269,12 @@ func Run(cnf *config.Config, lgr *log.Logger) {
 
 // rec is a row that will be added to a Bucket.
 type rec struct {
-	Dobyr    uint16
-	Egeoloc  uint8
-	Emprel   uint8
-	Enrolid  uint64
-	Memdays  uint16
-	MSA      uint32
-	MSwgtkey uint8
-	Region   uint8
-	Rx       uint8
-	Seqnum   uint64
-	Sex      uint8
-	Wgtkey   uint8
-	Year     uint16
+	Enrolid uint64
+	Seqnum  uint64
+	Svcdate uint16
+	Pay     float32
+	Thergrp uint8
+	Ndcnum  string
 }
 
 // Bucket is a memory-backed container for columnized data.  It
@@ -289,53 +282,32 @@ type rec struct {
 type Bucket struct {
 	BaseBucket
 
-	code     []uint16
-	Dobyr    []uint16
-	Egeoloc  []uint8
-	Emprel   []uint8
-	Enrolid  []uint64
-	Memdays  []uint16
-	MSA      []uint32
-	MSwgtkey []uint8
-	Region   []uint8
-	Rx       []uint8
-	Seqnum   []uint64
-	Sex      []uint8
-	Wgtkey   []uint8
-	Year     []uint16
+	code    []uint16
+	Enrolid []uint64
+	Seqnum  []uint64
+	Svcdate []uint16
+	Pay     []float32
+	Thergrp []uint8
+	Ndcnum  []string
 }
 
 // chunk is a typed container for data pulled directly out of a SAS file.
 // There are no type conversions or other modifications from the SAS file.
 type chunk struct {
-	row       int
-	col       int
-	Dobyr     []float64
-	Dobyrm    []bool
-	Egeoloc   []string
-	Egeolocm  []bool
-	Emprel    []string
-	Emprelm   []bool
-	Enrolid   []float64
-	Enrolidm  []bool
-	Memdays   []float64
-	Memdaysm  []bool
-	MSA       []float64
-	MSAm      []bool
-	MSwgtkey  []string
-	MSwgtkeym []bool
-	Region    []string
-	Regionm   []bool
-	Rx        []string
-	Rxm       []bool
-	Seqnum    []float64
-	Seqnumm   []bool
-	Sex       []string
-	Sexm      []bool
-	Wgtkey    []float64
-	Wgtkeym   []bool
-	Year      []float64
-	Yearm     []bool
+	row      int
+	col      int
+	Enrolid  []float64
+	Enrolidm []bool
+	Seqnum   []float64
+	Seqnumm  []bool
+	Svcdate  []float64
+	Svcdatem []bool
+	Pay      []float64
+	Paym     []bool
+	Thergrp  []string
+	Thergrpm []bool
+	Ndcnum   []string
+	Ndcnumm  []bool
 }
 
 // Add appends a rec to the end of the Bucket.
@@ -343,19 +315,12 @@ func (bucket *Bucket) Add(r *rec) {
 
 	bucket.Mut.Lock()
 
-	bucket.Dobyr = append(bucket.Dobyr, r.Dobyr)
-	bucket.Egeoloc = append(bucket.Egeoloc, r.Egeoloc)
-	bucket.Emprel = append(bucket.Emprel, r.Emprel)
 	bucket.Enrolid = append(bucket.Enrolid, r.Enrolid)
-	bucket.Memdays = append(bucket.Memdays, r.Memdays)
-	bucket.MSA = append(bucket.MSA, r.MSA)
-	bucket.MSwgtkey = append(bucket.MSwgtkey, r.MSwgtkey)
-	bucket.Region = append(bucket.Region, r.Region)
-	bucket.Rx = append(bucket.Rx, r.Rx)
 	bucket.Seqnum = append(bucket.Seqnum, r.Seqnum)
-	bucket.Sex = append(bucket.Sex, r.Sex)
-	bucket.Wgtkey = append(bucket.Wgtkey, r.Wgtkey)
-	bucket.Year = append(bucket.Year, r.Year)
+	bucket.Svcdate = append(bucket.Svcdate, r.Svcdate)
+	bucket.Pay = append(bucket.Pay, r.Pay)
+	bucket.Thergrp = append(bucket.Thergrp, r.Thergrp)
+	bucket.Ndcnum = append(bucket.Ndcnum, r.Ndcnum)
 
 	bucket.Mut.Unlock()
 
@@ -371,32 +336,18 @@ func (bucket *Bucket) Flush() {
 
 	bucket.Mut.Lock()
 
-	bucket.flushuint16("Dobyr", bucket.Dobyr)
-	bucket.Dobyr = bucket.Dobyr[0:0]
-	bucket.flushuint8("Egeoloc", bucket.Egeoloc)
-	bucket.Egeoloc = bucket.Egeoloc[0:0]
-	bucket.flushuint8("Emprel", bucket.Emprel)
-	bucket.Emprel = bucket.Emprel[0:0]
 	bucket.flushuint64("Enrolid", bucket.Enrolid)
 	bucket.Enrolid = bucket.Enrolid[0:0]
-	bucket.flushuint16("Memdays", bucket.Memdays)
-	bucket.Memdays = bucket.Memdays[0:0]
-	bucket.flushuint32("MSA", bucket.MSA)
-	bucket.MSA = bucket.MSA[0:0]
-	bucket.flushuint8("MSwgtkey", bucket.MSwgtkey)
-	bucket.MSwgtkey = bucket.MSwgtkey[0:0]
-	bucket.flushuint8("Region", bucket.Region)
-	bucket.Region = bucket.Region[0:0]
-	bucket.flushuint8("Rx", bucket.Rx)
-	bucket.Rx = bucket.Rx[0:0]
 	bucket.flushuint64("Seqnum", bucket.Seqnum)
 	bucket.Seqnum = bucket.Seqnum[0:0]
-	bucket.flushuint8("Sex", bucket.Sex)
-	bucket.Sex = bucket.Sex[0:0]
-	bucket.flushuint8("Wgtkey", bucket.Wgtkey)
-	bucket.Wgtkey = bucket.Wgtkey[0:0]
-	bucket.flushuint16("Year", bucket.Year)
-	bucket.Year = bucket.Year[0:0]
+	bucket.flushuint16("Svcdate", bucket.Svcdate)
+	bucket.Svcdate = bucket.Svcdate[0:0]
+	bucket.flushfloat32("Pay", bucket.Pay)
+	bucket.Pay = bucket.Pay[0:0]
+	bucket.flushuint8("Thergrp", bucket.Thergrp)
+	bucket.Thergrp = bucket.Thergrp[0:0]
+	bucket.flushstring("Ndcnum", bucket.Ndcnum)
+	bucket.Ndcnum = bucket.Ndcnum[0:0]
 
 	bucket.Mut.Unlock()
 }
@@ -408,42 +359,6 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 	var ii int
 	var ok bool
 
-	ii, ok = cm["DOBYR"]
-	if ok {
-		c.Dobyr, c.Dobyrm, err = data[ii].AsFloat64Slice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable DOBYR required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
-	ii, ok = cm["EGEOLOC"]
-	if ok {
-		c.Egeoloc, c.Egeolocm, err = data[ii].AsStringSlice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable EGEOLOC required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
-	ii, ok = cm["EMPREL"]
-	if ok {
-		c.Emprel, c.Emprelm, err = data[ii].AsStringSlice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable EMPREL required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
 	ii, ok = cm["ENROLID"]
 	if ok {
 		c.Enrolid, c.Enrolidm, err = data[ii].AsFloat64Slice()
@@ -453,63 +368,6 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 
 	} else {
 		msg := fmt.Sprintf("Variable ENROLID required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
-	ii, ok = cm["MEMDAYS"]
-	if ok {
-		c.Memdays, c.Memdaysm, err = data[ii].AsFloat64Slice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
-	ii, ok = cm["MSA"]
-	if ok {
-		c.MSA, c.MSAm, err = data[ii].AsFloat64Slice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable MSA required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
-	ii, ok = cm["MSWGTKEY"]
-	if ok {
-		c.MSwgtkey, c.MSwgtkeym, err = data[ii].AsStringSlice()
-		if err != nil {
-			panic(err)
-		}
-
-	}
-
-	ii, ok = cm["REGION"]
-	if ok {
-		c.Region, c.Regionm, err = data[ii].AsStringSlice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable REGION required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
-	ii, ok = cm["RX"]
-	if ok {
-		c.Rx, c.Rxm, err = data[ii].AsStringSlice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable RX required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
@@ -525,36 +383,51 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["SEX"]
+	ii, ok = cm["SVCDATE"]
 	if ok {
-		c.Sex, c.Sexm, err = data[ii].AsStringSlice()
+		c.Svcdate, c.Svcdatem, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable SEX required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable SVCDATE required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["WGTKEY"]
+	ii, ok = cm["PAY"]
 	if ok {
-		c.Wgtkey, c.Wgtkeym, err = data[ii].AsFloat64Slice()
-		if err != nil {
-			panic(err)
-		}
-
-	}
-
-	ii, ok = cm["YEAR"]
-	if ok {
-		c.Year, c.Yearm, err = data[ii].AsFloat64Slice()
+		c.Pay, c.Paym, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable YEAR required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable PAY required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["THERGRP"]
+	if ok {
+		c.Thergrp, c.Thergrpm, err = data[ii].AsStringSlice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable THERGRP required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["NDCNUM"]
+	if ok {
+		c.Ndcnum, c.Ndcnumm, err = data[ii].AsStringSlice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable NDCNUM required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
@@ -576,75 +449,23 @@ func (c *chunk) trynextrec() (*rec, bool) {
 		return nil, true
 	}
 
-	r.Dobyr = uint16(c.Dobyr[i])
-
-	// Convert string to number
-	if len(c.Egeoloc[i]) > 0 {
-		x, err := strconv.Atoi(c.Egeoloc[i])
-		if err == nil {
-			r.Egeoloc = uint8(x)
-		}
-	}
-
-	// Convert string to number
-	if len(c.Emprel[i]) > 0 {
-		x, err := strconv.Atoi(c.Emprel[i])
-		if err == nil {
-			r.Emprel = uint8(x)
-		}
-	}
-
 	r.Enrolid = uint64(c.Enrolid[i])
-
-	r.Memdays = uint16(c.Memdays[i])
-
-	r.MSA = uint32(c.MSA[i])
-
-	if c.MSwgtkey != nil {
-
-		// Convert string to number
-		if len(c.MSwgtkey[i]) > 0 {
-			x, err := strconv.Atoi(c.MSwgtkey[i])
-			if err == nil {
-				r.MSwgtkey = uint8(x)
-			}
-		}
-
-	}
-
-	// Convert string to number
-	if len(c.Region[i]) > 0 {
-		x, err := strconv.Atoi(c.Region[i])
-		if err == nil {
-			r.Region = uint8(x)
-		}
-	}
-
-	// Convert string to number
-	if len(c.Rx[i]) > 0 {
-		x, err := strconv.Atoi(c.Rx[i])
-		if err == nil {
-			r.Rx = uint8(x)
-		}
-	}
 
 	r.Seqnum = uint64(c.Seqnum[i])
 
+	r.Svcdate = uint16(c.Svcdate[i])
+
+	r.Pay = float32(c.Pay[i])
+
 	// Convert string to number
-	if len(c.Sex[i]) > 0 {
-		x, err := strconv.Atoi(c.Sex[i])
+	if len(c.Thergrp[i]) > 0 {
+		x, err := strconv.Atoi(c.Thergrp[i])
 		if err == nil {
-			r.Sex = uint8(x)
+			r.Thergrp = uint8(x)
 		}
 	}
 
-	if c.Wgtkey != nil {
-
-		r.Wgtkey = uint8(c.Wgtkey[i])
-
-	}
-
-	r.Year = uint16(c.Year[i])
+	r.Ndcnum = strings.TrimSpace(c.Ndcnum[i])
 
 	c.row++
 

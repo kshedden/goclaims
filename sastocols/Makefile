@@ -1,4 +1,4 @@
-.PHONY: afiles ffiles ifiles sfiles ofiles
+.PHONY: afiles ffiles ifiles sfiles ofiles dfiles
 
 afiles:
 	go run gen.go defs/adefs.toml > afiles/sastocols.go
@@ -15,4 +15,7 @@ sfiles:
 ofiles:
 	go run gen.go defs/odefs.toml > ofiles/sastocols.go
 
-all: afiles ffiles ifiles sfiles ofiles
+dfiles:
+	go run gen.go defs/ddefs.toml > dfiles/sastocols.go
+
+all: afiles ffiles ifiles sfiles ofiles dfiles

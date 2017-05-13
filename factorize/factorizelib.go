@@ -1,7 +1,6 @@
-/*
-Package factorize converts strings to uint32 codes, and saves the
-mapping from strings to codes as a json file.
-*/
+/* Package factorize converts strings to integer codes, and saves the
+mapping from strings to codes as a json file.  The codes are written
+to disk as uvarint values.  */
 
 package factorize
 
@@ -20,23 +19,34 @@ import (
 )
 
 const (
+	// Limit concurrent goroutines to this number.
 	concurrency = 20
 )
 
+// A function that is applied to eah string value prior to integer
+// coding.
 type xfunc func(string) string
 
 var (
+	// Track the frequency of each string value
 	freq map[string]uint64
 
+	// Maps string values to their integer codes
 	codes map[string]int
 
-	sem chan bool
-
-	logger *log.Logger
-
+	// The file name where the json-formatted code information is
+	// written.
 	codesFile string
 
+	// An optional function to be applied to each string value
+	// prior to integer coding.
 	xf xfunc
+
+	// Used to limit concurrency.
+	sem chan bool
+
+	// Log messages here
+	logger *log.Logger
 )
 
 func dofile(file string) {
@@ -265,7 +275,54 @@ func getcodes() {
 	}
 }
 
-func Run(files []string, xform xfunc, codesfile string, lgr *log.Logger) {
+// Save the factor code/label associations.
+func writeCodes() {
+	logger.Printf("Writing code/label associations to %s", codesFile)
+	fid, err := os.Create(codesFile)
+	if err != nil {
+		panic(err)
+	}
+	defer fid.Close()
+	enc := json.NewEncoder(fid)
+	err = enc.Encode(codes)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func writeVname(vnames []string, prefile string, codesfile string) {
+
+	logger.Printf("Updating variable name/code prefixes in %s", prefile)
+	mp := make(map[string]string)
+
+	// Get the current map if it exists
+	_, err := os.Stat(prefile)
+	if !os.IsNotExist(err) {
+		rdr, err := os.Open(prefile)
+		dec := json.NewDecoder(rdr)
+		err = dec.Decode(mp)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	for _, v := range vnames {
+		mp[v] = prefile
+	}
+
+	fid, err := os.Create(prefile)
+	if err != nil {
+		panic(err)
+	}
+	defer fid.Close()
+	enc := json.NewEncoder(fid)
+	err = enc.Encode(codes)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func Run(files []string, xform xfunc, codesfile string, prefile string, vnames []string, lgr *log.Logger) {
 
 	logger = lgr
 	sem = make(chan bool, concurrency)
@@ -287,18 +344,8 @@ func Run(files []string, xform xfunc, codesfile string, lgr *log.Logger) {
 
 	updateDtypes(files)
 
-	// Save the factor code/label associations.
-	logger.Printf("Writing code/label associations to %s", codesfile)
-	fid, err := os.Create(codesfile)
-	if err != nil {
-		panic(err)
-	}
-	defer fid.Close()
-	enc := json.NewEncoder(fid)
-	err = enc.Encode(codes)
-	if err != nil {
-		panic(err)
-	}
+	writeCodes()
+	writeVname(vnames, prefile, codesFile)
 
 	logger.Printf("All done, exiting")
 }

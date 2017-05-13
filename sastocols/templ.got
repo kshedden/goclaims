@@ -169,6 +169,10 @@ func (c *chunk) nextrec() *rec {
 	return nil
 }
 
+// writeconfig writes the configuration information for the gocols dataset.  This
+// configuration information is intended for users of the target dataset so does
+// not need to contain information about how the data were derived from the source
+// SAS files.
 func writeconfig() {
 
         type Config struct {

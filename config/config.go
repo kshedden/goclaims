@@ -106,42 +106,6 @@ func ReadDtypes(bucket int, conf *Config) map[string]string {
 	return dtypes
 }
 
-// ReadFactorCodes returns a map from strings to integers describing a
-// factor-coded variable.
-func ReadFactorCodes(varname string, conf *Config) map[string]int {
-
-	fn := path.Join(conf.CodesDir, varname+".json")
-	fid, err := os.Open(fn)
-	if err != nil {
-		msg := fmt.Sprintf("Can't open codes file %s\n", fn)
-		os.Stderr.WriteString(msg)
-		os.Exit(1)
-	}
-	defer fid.Close()
-
-	dec := json.NewDecoder(fid)
-	mp := make(map[string]int)
-	err = dec.Decode(&mp)
-	if err != nil {
-		panic(err)
-	}
-
-	return mp
-}
-
-// RevFactorCodes returns the reverse factor coding map, associating
-// integers with their corresponding string label.
-func RevCodes(codes map[string]int) map[int]string {
-
-	rcodes := make(map[int]string)
-
-	for k, v := range codes {
-		rcodes[v] = k
-	}
-
-	return rcodes
-}
-
 // VarDesc is a description of a variable to be ported from a SAS
 // file.  Name, GoType, and SASType must be provided, and Must is
 // optional.

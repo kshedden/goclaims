@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Admdate":"uint16","Admtyp":"uint8","Disdate":"uint16","Dx1":"string","Dx10":"string","Dx11":"string","Dx12":"string","Dx13":"string","Dx14":"string","Dx15":"string","Dx2":"string","Dx3":"string","Dx4":"string","Dx5":"string","Dx6":"string","Dx7":"string","Dx8":"string","Dx9":"string","Enrolid":"uint64","Hospnet":"float32","Hosppay":"float32","Physnet":"float32","Physpay":"float32","Proc1":"string","Proc10":"string","Proc11":"string","Proc12":"string","Proc13":"string","Proc14":"string","Proc15":"string","Proc2":"string","Proc3":"string","Proc4":"string","Proc5":"string","Proc6":"string","Proc7":"string","Proc8":"string","Proc9":"string","Seqnum":"uint64","Totcoins":"float32","Totcopay":"float32","Totded":"float32","Totnet":"float32","Totpay":"float32"}
+	dtypes = `{"Admdate":"uint16","Admtyp":"uint8","Disdate":"uint16","Dstatus":"uint8","Dx1":"string","Dx10":"string","Dx11":"string","Dx12":"string","Dx13":"string","Dx14":"string","Dx15":"string","Dx2":"string","Dx3":"string","Dx4":"string","Dx5":"string","Dx6":"string","Dx7":"string","Dx8":"string","Dx9":"string","Enrolid":"uint64","Hospnet":"float32","Hosppay":"float32","Physnet":"float32","Physpay":"float32","Proc1":"string","Proc10":"string","Proc11":"string","Proc12":"string","Proc13":"string","Proc14":"string","Proc15":"string","Proc2":"string","Proc3":"string","Proc4":"string","Proc5":"string","Proc6":"string","Proc7":"string","Proc8":"string","Proc9":"string","Seqnum":"uint64","Totcoins":"float32","Totcopay":"float32","Totded":"float32","Totnet":"float32","Totpay":"float32"}
 `
 
 	wg  sync.WaitGroup
@@ -171,6 +171,10 @@ func (c *chunk) nextrec() *rec {
 	return nil
 }
 
+// writeconfig writes the configuration information for the gocols dataset.  This
+// configuration information is intended for users of the target dataset so does
+// not need to contain information about how the data were derived from the source
+// SAS files.
 func writeconfig() {
 
 	type Config struct {
@@ -272,6 +276,7 @@ type rec struct {
 	Admtyp   uint8
 	Admdate  uint16
 	Disdate  uint16
+	Dstatus  uint8
 	Dx1      string
 	Dx2      string
 	Dx3      string
@@ -324,6 +329,7 @@ type Bucket struct {
 	Admtyp   []uint8
 	Admdate  []uint16
 	Disdate  []uint16
+	Dstatus  []uint8
 	Dx1      []string
 	Dx2      []string
 	Dx3      []string
@@ -378,6 +384,8 @@ type chunk struct {
 	Admdatem  []bool
 	Disdate   []float64
 	Disdatem  []bool
+	Dstatus   []string
+	Dstatusm  []bool
 	Dx1       []string
 	Dx1m      []bool
 	Dx2       []string
@@ -470,6 +478,7 @@ func (bucket *Bucket) Add(r *rec) {
 	bucket.Admtyp = append(bucket.Admtyp, r.Admtyp)
 	bucket.Admdate = append(bucket.Admdate, r.Admdate)
 	bucket.Disdate = append(bucket.Disdate, r.Disdate)
+	bucket.Dstatus = append(bucket.Dstatus, r.Dstatus)
 	bucket.Dx1 = append(bucket.Dx1, r.Dx1)
 	bucket.Dx2 = append(bucket.Dx2, r.Dx2)
 	bucket.Dx3 = append(bucket.Dx3, r.Dx3)
@@ -532,6 +541,8 @@ func (bucket *Bucket) Flush() {
 	bucket.Admdate = bucket.Admdate[0:0]
 	bucket.flushuint16("Disdate", bucket.Disdate)
 	bucket.Disdate = bucket.Disdate[0:0]
+	bucket.flushuint8("Dstatus", bucket.Dstatus)
+	bucket.Dstatus = bucket.Dstatus[0:0]
 	bucket.flushstring("Dx1", bucket.Dx1)
 	bucket.Dx1 = bucket.Dx1[0:0]
 	bucket.flushstring("Dx2", bucket.Dx2)
@@ -658,6 +669,18 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 
 	} else {
 		msg := fmt.Sprintf("Variable DISDATE required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["DSTATUS"]
+	if ok {
+		c.Dstatus, c.Dstatusm, err = data[ii].AsStringSlice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable DSTATUS required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
@@ -1183,6 +1206,14 @@ func (c *chunk) trynextrec() (*rec, bool) {
 
 	r.Disdate = uint16(c.Disdate[i])
 
+	// Convert string to number
+	if len(c.Dstatus[i]) > 0 {
+		x, err := strconv.Atoi(c.Dstatus[i])
+		if err == nil {
+			r.Dstatus = uint8(x)
+		}
+	}
+
 	r.Dx1 = strings.TrimSpace(c.Dx1[i])
 
 	r.Dx2 = strings.TrimSpace(c.Dx2[i])
@@ -1442,7 +1473,7 @@ func main() {
 
 	if len(os.Args) != 2 {
 		os.Stderr.WriteString("sastocols: Wrong number of arguments\n\n")
-		msg := fmt.Sprintf("Usage: %s config.json\n\n", os.Args[0])
+		msg := fmt.Sprintf("Usage: %s config.toml\n\n", os.Args[0])
 		os.Stderr.WriteString(msg)
 		os.Exit(1)
 	}

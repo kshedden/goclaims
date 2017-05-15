@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Copay":"float32","Dx1":"string","Dx2":"string","Enrolid":"uint64","Netpay":"float32","Pay":"float32","Proc1":"string","Seqnum":"uint64","Svcdate":"uint16"}
+	dtypes = `{"Copay":"float32","Dstatus":"uint8","Dx1":"string","Dx2":"string","Enrolid":"uint64","Netpay":"float32","Pay":"float32","Proc1":"string","Seqnum":"uint64","Svcdate":"uint16"}
 `
 
 	wg  sync.WaitGroup
@@ -171,6 +171,10 @@ func (c *chunk) nextrec() *rec {
 	return nil
 }
 
+// writeconfig writes the configuration information for the gocols dataset.  This
+// configuration information is intended for users of the target dataset so does
+// not need to contain information about how the data were derived from the source
+// SAS files.
 func writeconfig() {
 
 	type Config struct {
@@ -269,15 +273,16 @@ func Run(cnf *config.Config, lgr *log.Logger) {
 
 // rec is a row that will be added to a Bucket.
 type rec struct {
-	Seqnum  uint64
-	Enrolid uint64
-	Svcdate uint16
 	Copay   float32
-	Netpay  float32
-	Pay     float32
+	Dstatus uint8
 	Dx1     string
 	Dx2     string
+	Enrolid uint64
+	Netpay  float32
+	Pay     float32
 	Proc1   string
+	Seqnum  uint64
+	Svcdate uint16
 }
 
 // Bucket is a memory-backed container for columnized data.  It
@@ -286,15 +291,16 @@ type Bucket struct {
 	BaseBucket
 
 	code    []uint16
-	Seqnum  []uint64
-	Enrolid []uint64
-	Svcdate []uint16
 	Copay   []float32
-	Netpay  []float32
-	Pay     []float32
+	Dstatus []uint8
 	Dx1     []string
 	Dx2     []string
+	Enrolid []uint64
+	Netpay  []float32
+	Pay     []float32
 	Proc1   []string
+	Seqnum  []uint64
+	Svcdate []uint16
 }
 
 // chunk is a typed container for data pulled directly out of a SAS file.
@@ -302,24 +308,26 @@ type Bucket struct {
 type chunk struct {
 	row      int
 	col      int
-	Seqnum   []float64
-	Seqnumm  []bool
-	Enrolid  []float64
-	Enrolidm []bool
-	Svcdate  []float64
-	Svcdatem []bool
 	Copay    []float64
 	Copaym   []bool
-	Netpay   []float64
-	Netpaym  []bool
-	Pay      []float64
-	Paym     []bool
+	Dstatus  []string
+	Dstatusm []bool
 	Dx1      []string
 	Dx1m     []bool
 	Dx2      []string
 	Dx2m     []bool
+	Enrolid  []float64
+	Enrolidm []bool
+	Netpay   []float64
+	Netpaym  []bool
+	Pay      []float64
+	Paym     []bool
 	Proc1    []string
 	Proc1m   []bool
+	Seqnum   []float64
+	Seqnumm  []bool
+	Svcdate  []float64
+	Svcdatem []bool
 }
 
 // Add appends a rec to the end of the Bucket.
@@ -327,15 +335,16 @@ func (bucket *Bucket) Add(r *rec) {
 
 	bucket.Mut.Lock()
 
-	bucket.Seqnum = append(bucket.Seqnum, r.Seqnum)
-	bucket.Enrolid = append(bucket.Enrolid, r.Enrolid)
-	bucket.Svcdate = append(bucket.Svcdate, r.Svcdate)
 	bucket.Copay = append(bucket.Copay, r.Copay)
-	bucket.Netpay = append(bucket.Netpay, r.Netpay)
-	bucket.Pay = append(bucket.Pay, r.Pay)
+	bucket.Dstatus = append(bucket.Dstatus, r.Dstatus)
 	bucket.Dx1 = append(bucket.Dx1, r.Dx1)
 	bucket.Dx2 = append(bucket.Dx2, r.Dx2)
+	bucket.Enrolid = append(bucket.Enrolid, r.Enrolid)
+	bucket.Netpay = append(bucket.Netpay, r.Netpay)
+	bucket.Pay = append(bucket.Pay, r.Pay)
 	bucket.Proc1 = append(bucket.Proc1, r.Proc1)
+	bucket.Seqnum = append(bucket.Seqnum, r.Seqnum)
+	bucket.Svcdate = append(bucket.Svcdate, r.Svcdate)
 
 	bucket.Mut.Unlock()
 
@@ -351,24 +360,26 @@ func (bucket *Bucket) Flush() {
 
 	bucket.Mut.Lock()
 
-	bucket.flushuint64("Seqnum", bucket.Seqnum)
-	bucket.Seqnum = bucket.Seqnum[0:0]
-	bucket.flushuint64("Enrolid", bucket.Enrolid)
-	bucket.Enrolid = bucket.Enrolid[0:0]
-	bucket.flushuint16("Svcdate", bucket.Svcdate)
-	bucket.Svcdate = bucket.Svcdate[0:0]
 	bucket.flushfloat32("Copay", bucket.Copay)
 	bucket.Copay = bucket.Copay[0:0]
-	bucket.flushfloat32("Netpay", bucket.Netpay)
-	bucket.Netpay = bucket.Netpay[0:0]
-	bucket.flushfloat32("Pay", bucket.Pay)
-	bucket.Pay = bucket.Pay[0:0]
+	bucket.flushuint8("Dstatus", bucket.Dstatus)
+	bucket.Dstatus = bucket.Dstatus[0:0]
 	bucket.flushstring("Dx1", bucket.Dx1)
 	bucket.Dx1 = bucket.Dx1[0:0]
 	bucket.flushstring("Dx2", bucket.Dx2)
 	bucket.Dx2 = bucket.Dx2[0:0]
+	bucket.flushuint64("Enrolid", bucket.Enrolid)
+	bucket.Enrolid = bucket.Enrolid[0:0]
+	bucket.flushfloat32("Netpay", bucket.Netpay)
+	bucket.Netpay = bucket.Netpay[0:0]
+	bucket.flushfloat32("Pay", bucket.Pay)
+	bucket.Pay = bucket.Pay[0:0]
 	bucket.flushstring("Proc1", bucket.Proc1)
 	bucket.Proc1 = bucket.Proc1[0:0]
+	bucket.flushuint64("Seqnum", bucket.Seqnum)
+	bucket.Seqnum = bucket.Seqnum[0:0]
+	bucket.flushuint16("Svcdate", bucket.Svcdate)
+	bucket.Svcdate = bucket.Svcdate[0:0]
 
 	bucket.Mut.Unlock()
 }
@@ -379,42 +390,6 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 	var err error
 	var ii int
 	var ok bool
-
-	ii, ok = cm["SEQNUM"]
-	if ok {
-		c.Seqnum, c.Seqnumm, err = data[ii].AsFloat64Slice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable SEQNUM required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
-	ii, ok = cm["ENROLID"]
-	if ok {
-		c.Enrolid, c.Enrolidm, err = data[ii].AsFloat64Slice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable ENROLID required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
-	ii, ok = cm["SVCDATE"]
-	if ok {
-		c.Svcdate, c.Svcdatem, err = data[ii].AsFloat64Slice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable SVCDATE required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
 
 	ii, ok = cm["COPAY"]
 	if ok {
@@ -428,27 +403,15 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["NETPAY"]
+	ii, ok = cm["DSTATUS"]
 	if ok {
-		c.Netpay, c.Netpaym, err = data[ii].AsFloat64Slice()
+		c.Dstatus, c.Dstatusm, err = data[ii].AsStringSlice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable NETPAY required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
-	ii, ok = cm["PAY"]
-	if ok {
-		c.Pay, c.Paym, err = data[ii].AsFloat64Slice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable PAY required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable DSTATUS required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
@@ -476,6 +439,42 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 		return fmt.Errorf(msg)
 	}
 
+	ii, ok = cm["ENROLID"]
+	if ok {
+		c.Enrolid, c.Enrolidm, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable ENROLID required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["NETPAY"]
+	if ok {
+		c.Netpay, c.Netpaym, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable NETPAY required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["PAY"]
+	if ok {
+		c.Pay, c.Paym, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable PAY required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
 	ii, ok = cm["PROC1"]
 	if ok {
 		c.Proc1, c.Proc1m, err = data[ii].AsStringSlice()
@@ -485,6 +484,30 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 
 	} else {
 		msg := fmt.Sprintf("Variable PROC1 required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["SEQNUM"]
+	if ok {
+		c.Seqnum, c.Seqnumm, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable SEQNUM required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["SVCDATE"]
+	if ok {
+		c.Svcdate, c.Svcdatem, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable SVCDATE required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
@@ -506,23 +529,31 @@ func (c *chunk) trynextrec() (*rec, bool) {
 		return nil, true
 	}
 
-	r.Seqnum = uint64(c.Seqnum[i])
-
-	r.Enrolid = uint64(c.Enrolid[i])
-
-	r.Svcdate = uint16(c.Svcdate[i])
-
 	r.Copay = float32(c.Copay[i])
 
-	r.Netpay = float32(c.Netpay[i])
-
-	r.Pay = float32(c.Pay[i])
+	// Convert string to number
+	if len(c.Dstatus[i]) > 0 {
+		x, err := strconv.Atoi(c.Dstatus[i])
+		if err == nil {
+			r.Dstatus = uint8(x)
+		}
+	}
 
 	r.Dx1 = strings.TrimSpace(c.Dx1[i])
 
 	r.Dx2 = strings.TrimSpace(c.Dx2[i])
 
+	r.Enrolid = uint64(c.Enrolid[i])
+
+	r.Netpay = float32(c.Netpay[i])
+
+	r.Pay = float32(c.Pay[i])
+
 	r.Proc1 = strings.TrimSpace(c.Proc1[i])
+
+	r.Seqnum = uint64(c.Seqnum[i])
+
+	r.Svcdate = uint16(c.Svcdate[i])
 
 	c.row++
 
@@ -701,7 +732,7 @@ func main() {
 
 	if len(os.Args) != 2 {
 		os.Stderr.WriteString("sastocols: Wrong number of arguments\n\n")
-		msg := fmt.Sprintf("Usage: %s config.json\n\n", os.Args[0])
+		msg := fmt.Sprintf("Usage: %s config.toml\n\n", os.Args[0])
 		os.Stderr.WriteString(msg)
 		os.Exit(1)
 	}

@@ -171,6 +171,10 @@ func (c *chunk) nextrec() *rec {
 	return nil
 }
 
+// writeconfig writes the configuration information for the gocols dataset.  This
+// configuration information is intended for users of the target dataset so does
+// not need to contain information about how the data were derived from the source
+// SAS files.
 func writeconfig() {
 
 	type Config struct {
@@ -644,7 +648,7 @@ func main() {
 
 	if len(os.Args) != 2 {
 		os.Stderr.WriteString("sastocols: Wrong number of arguments\n\n")
-		msg := fmt.Sprintf("Usage: %s config.json\n\n", os.Args[0])
+		msg := fmt.Sprintf("Usage: %s config.toml\n\n", os.Args[0])
 		os.Stderr.WriteString(msg)
 		os.Exit(1)
 	}

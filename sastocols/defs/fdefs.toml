@@ -1,31 +1,13 @@
 [[Variable]]
-  Name = "Seqnum"
-  GoType = "uint64"
-  SASType = "float64"
-  Must = true
-
-[[Variable]]
-  Name = "Enrolid"
-  GoType = "uint64"
-  SASType = "float64"
-  Must = true
-
-[[Variable]]
-  Name = "Svcdate"
-  GoType = "uint16"
-  SASType = "float64"
-  Must = true
-
-[[Variable]]
   Name = "Copay"
   GoType = "float32"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Netpay"
-  GoType = "float32"
-  SASType = "float64"
+  Name = "Dstatus"
+  GoType = "uint8"
+  SASType = "string"
   Must = true
 
 [[Variable]]
@@ -89,6 +71,18 @@
   Must = true
 
 [[Variable]]
+  Name = "Enrolid"
+  GoType = "uint64"
+  SASType = "float64"
+  Must = true
+
+[[Variable]]
+  Name = "Netpay"
+  GoType = "float32"
+  SASType = "float64"
+  Must = true
+
+[[Variable]]
   Name = "Proc1"
   GoType = "string"
   SASType = "string"
@@ -122,4 +116,16 @@
   Name = "Proc6"
   GoType = "string"
   SASType = "string"
+  Must = true
+
+[[Variable]]
+  Name = "Seqnum"
+  GoType = "uint64"
+  SASType = "float64"
+  Must = true
+
+[[Variable]]
+  Name = "Svcdate"
+  GoType = "uint16"
+  SASType = "float64"
   Must = true

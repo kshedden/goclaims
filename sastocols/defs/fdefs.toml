@@ -119,6 +119,12 @@
   Must = true
 
 [[Variable]]
+  Name = "Stdprov"
+  GoType = "uint16"
+  SASType = "float64"
+  Must = true
+
+[[Variable]]
   Name = "Seqnum"
   GoType = "uint64"
   SASType = "float64"

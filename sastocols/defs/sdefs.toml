@@ -53,6 +53,12 @@
   Must = true
 
 [[Variable]]
+  Name = "Stdprov"
+  GoType = "uint16"
+  SASType = "float64"
+  Must = true
+
+[[Variable]]
   Name = "Svcdate"
   GoType = "uint16"
   SASType = "float64"

@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Copay":"float32","Deduct":"float32","Dx1":"string","Dx2":"string","Dx3":"string","Dx4":"string","Enrolid":"uint64","Netpay":"uint32","Proc1":"string","Seqnum":"uint64","Stdprov":"uint16","Svcdate":"uint16","Svcscat":"uint32"}
+	dtypes = `{"Copay":"float32","Deduct":"float32","Dx1":"string","Dx2":"string","Dx3":"string","Dx4":"string","Enrolid":"uint64","Netpay":"float32","Proc1":"string","Seqnum":"uint64","Stdprov":"uint16","Svcdate":"uint16","Svcscat":"uint32"}
 `
 
 	wg  sync.WaitGroup
@@ -284,7 +284,7 @@ type rec struct {
 	Copay   float32
 	Deduct  float32
 	Stdprov uint16
-	Netpay  uint32
+	Netpay  float32
 	Svcscat uint32
 }
 
@@ -305,7 +305,7 @@ type Bucket struct {
 	Copay   []float32
 	Deduct  []float32
 	Stdprov []uint16
-	Netpay  []uint32
+	Netpay  []float32
 	Svcscat []uint32
 }
 
@@ -397,7 +397,7 @@ func (bucket *Bucket) Flush() {
 	bucket.Deduct = bucket.Deduct[0:0]
 	bucket.flushuint16("Stdprov", bucket.Stdprov)
 	bucket.Stdprov = bucket.Stdprov[0:0]
-	bucket.flushuint32("Netpay", bucket.Netpay)
+	bucket.flushfloat32("Netpay", bucket.Netpay)
 	bucket.Netpay = bucket.Netpay[0:0]
 	bucket.flushuint32("Svcscat", bucket.Svcscat)
 	bucket.Svcscat = bucket.Svcscat[0:0]
@@ -610,7 +610,7 @@ func (c *chunk) trynextrec() (*rec, bool) {
 
 	r.Stdprov = uint16(c.Stdprov[i])
 
-	r.Netpay = uint32(c.Netpay[i])
+	r.Netpay = float32(c.Netpay[i])
 
 	// Convert string to number
 	if len(c.Svcscat[i]) > 0 {

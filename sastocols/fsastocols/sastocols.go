@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Copay":"float32","Deduct":"float32","Dstatus":"uint8","Dx1":"string","Dx2":"string","Dx3":"string","Dx4":"string","Dx5":"string","Dx6":"string","Dx7":"string","Dx8":"string","Dx9":"string","Enrolid":"uint64","Netpay":"float32","Proc1":"string","Proc2":"string","Proc3":"string","Proc4":"string","Proc5":"string","Proc6":"string","Seqnum":"uint64","Svcdate":"uint16"}
+	dtypes = `{"Copay":"float32","Deduct":"float32","Dstatus":"uint8","Dx1":"string","Dx2":"string","Dx3":"string","Dx4":"string","Dx5":"string","Dx6":"string","Dx7":"string","Dx8":"string","Dx9":"string","Enrolid":"uint64","Netpay":"float32","Proc1":"string","Proc2":"string","Proc3":"string","Proc4":"string","Proc5":"string","Proc6":"string","Seqnum":"uint64","Stdprov":"uint16","Svcdate":"uint16"}
 `
 
 	wg  sync.WaitGroup
@@ -293,6 +293,7 @@ type rec struct {
 	Proc4   string
 	Proc5   string
 	Proc6   string
+	Stdprov uint16
 	Seqnum  uint64
 	Svcdate uint16
 }
@@ -323,6 +324,7 @@ type Bucket struct {
 	Proc4   []string
 	Proc5   []string
 	Proc6   []string
+	Stdprov []uint16
 	Seqnum  []uint64
 	Svcdate []uint16
 }
@@ -372,6 +374,8 @@ type chunk struct {
 	Proc5m   []bool
 	Proc6    []string
 	Proc6m   []bool
+	Stdprov  []float64
+	Stdprovm []bool
 	Seqnum   []float64
 	Seqnumm  []bool
 	Svcdate  []float64
@@ -403,6 +407,7 @@ func (bucket *Bucket) Add(r *rec) {
 	bucket.Proc4 = append(bucket.Proc4, r.Proc4)
 	bucket.Proc5 = append(bucket.Proc5, r.Proc5)
 	bucket.Proc6 = append(bucket.Proc6, r.Proc6)
+	bucket.Stdprov = append(bucket.Stdprov, r.Stdprov)
 	bucket.Seqnum = append(bucket.Seqnum, r.Seqnum)
 	bucket.Svcdate = append(bucket.Svcdate, r.Svcdate)
 
@@ -460,6 +465,8 @@ func (bucket *Bucket) Flush() {
 	bucket.Proc5 = bucket.Proc5[0:0]
 	bucket.flushstring("Proc6", bucket.Proc6)
 	bucket.Proc6 = bucket.Proc6[0:0]
+	bucket.flushuint16("Stdprov", bucket.Stdprov)
+	bucket.Stdprov = bucket.Stdprov[0:0]
 	bucket.flushuint64("Seqnum", bucket.Seqnum)
 	bucket.Seqnum = bucket.Seqnum[0:0]
 	bucket.flushuint16("Svcdate", bucket.Svcdate)
@@ -715,6 +722,18 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 		return fmt.Errorf(msg)
 	}
 
+	ii, ok = cm["STDPROV"]
+	if ok {
+		c.Stdprov, c.Stdprovm, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable STDPROV required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
 	ii, ok = cm["SEQNUM"]
 	if ok {
 		c.Seqnum, c.Seqnumm, err = data[ii].AsFloat64Slice()
@@ -802,6 +821,8 @@ func (c *chunk) trynextrec() (*rec, bool) {
 	r.Proc5 = strings.TrimSpace(c.Proc5[i])
 
 	r.Proc6 = strings.TrimSpace(c.Proc6[i])
+
+	r.Stdprov = uint16(c.Stdprov[i])
 
 	r.Seqnum = uint64(c.Seqnum[i])
 

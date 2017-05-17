@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Copay":"float32","Dstatus":"uint8","Dx1":"string","Dx2":"string","Enrolid":"uint64","Netpay":"float32","Pay":"float32","Proc1":"string","Seqnum":"uint64","Svcdate":"uint16"}
+	dtypes = `{"Copay":"float32","Dstatus":"uint8","Dx1":"string","Dx2":"string","Enrolid":"uint64","Netpay":"float32","Pay":"float32","Proc1":"string","Seqnum":"uint64","Stdprov":"uint16","Svcdate":"uint16"}
 `
 
 	wg  sync.WaitGroup
@@ -282,6 +282,7 @@ type rec struct {
 	Pay     float32
 	Proc1   string
 	Seqnum  uint64
+	Stdprov uint16
 	Svcdate uint16
 }
 
@@ -300,6 +301,7 @@ type Bucket struct {
 	Pay     []float32
 	Proc1   []string
 	Seqnum  []uint64
+	Stdprov []uint16
 	Svcdate []uint16
 }
 
@@ -326,6 +328,8 @@ type chunk struct {
 	Proc1m   []bool
 	Seqnum   []float64
 	Seqnumm  []bool
+	Stdprov  []float64
+	Stdprovm []bool
 	Svcdate  []float64
 	Svcdatem []bool
 }
@@ -344,6 +348,7 @@ func (bucket *Bucket) Add(r *rec) {
 	bucket.Pay = append(bucket.Pay, r.Pay)
 	bucket.Proc1 = append(bucket.Proc1, r.Proc1)
 	bucket.Seqnum = append(bucket.Seqnum, r.Seqnum)
+	bucket.Stdprov = append(bucket.Stdprov, r.Stdprov)
 	bucket.Svcdate = append(bucket.Svcdate, r.Svcdate)
 
 	bucket.Mut.Unlock()
@@ -378,6 +383,8 @@ func (bucket *Bucket) Flush() {
 	bucket.Proc1 = bucket.Proc1[0:0]
 	bucket.flushuint64("Seqnum", bucket.Seqnum)
 	bucket.Seqnum = bucket.Seqnum[0:0]
+	bucket.flushuint16("Stdprov", bucket.Stdprov)
+	bucket.Stdprov = bucket.Stdprov[0:0]
 	bucket.flushuint16("Svcdate", bucket.Svcdate)
 	bucket.Svcdate = bucket.Svcdate[0:0]
 
@@ -499,6 +506,18 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 		return fmt.Errorf(msg)
 	}
 
+	ii, ok = cm["STDPROV"]
+	if ok {
+		c.Stdprov, c.Stdprovm, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable STDPROV required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
 	ii, ok = cm["SVCDATE"]
 	if ok {
 		c.Svcdate, c.Svcdatem, err = data[ii].AsFloat64Slice()
@@ -552,6 +571,8 @@ func (c *chunk) trynextrec() (*rec, bool) {
 	r.Proc1 = strings.TrimSpace(c.Proc1[i])
 
 	r.Seqnum = uint64(c.Seqnum[i])
+
+	r.Stdprov = uint16(c.Stdprov[i])
 
 	r.Svcdate = uint16(c.Svcdate[i])
 

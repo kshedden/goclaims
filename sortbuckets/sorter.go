@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	concurrency = 5
+	concurrency = 10
 )
 
 var (
@@ -243,7 +243,7 @@ func dofixedwidth(filename string, ii []int, w int) {
 	logger.Printf("Finishing file %s", filename)
 }
 
-// Reorder the variable width data in one file.
+// Reorder variable width data (currently must be uvarint) in one file.
 func dovarwidth(filename string, ii []int) {
 
 	if strings.HasSuffix(filename, "_string.bin.sz") {

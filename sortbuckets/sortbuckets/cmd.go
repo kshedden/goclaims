@@ -57,7 +57,7 @@ func main() {
 
 	if len(os.Args) != 5 {
 		_, _ = os.Stderr.WriteString("sortbuckets: wrong number of arguments, usage\n\n")
-		_, _ = os.Stderr.WriteString("    sortbuckets [run|revert] idvar timevar config.json\n\n")
+		_, _ = os.Stderr.WriteString("    sortbuckets [run|revert] idvar timevar config.toml\n\n")
 		os.Exit(1)
 	}
 

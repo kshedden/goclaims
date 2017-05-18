@@ -52,11 +52,6 @@ func setupLogger() {
 	logger = log.New(fid, "", log.Ltime)
 }
 
-const (
-	// Maximum number of simultaneous goroutines.
-	concurrent = 100
-)
-
 // harvest retrieves data from the producers in the form of data
 // records, and adds each record to the appropriate bucket.
 func harvest() {
@@ -200,7 +195,7 @@ func writeconfig() {
 func setup() {
 
 	rslt_chan = make(chan *rec)
-	sem = make(chan bool, concurrent)
+	sem = make(chan bool, conf.Concurrency)
 
 	buckets = make([]*Bucket, conf.NumBuckets)
 	for i, _ := range buckets {
@@ -1332,8 +1327,13 @@ func (bucket *BaseBucket) flushstring(varname string, vec []string) {
 
 	toclose, wtr := bucket.openfile(varname)
 
+	nl := []byte("\n")
 	for _, x := range vec {
-		_, err := wtr.Write([]byte(x + "\n"))
+		_, err := wtr.Write([]byte(x))
+		if err != nil {
+			panic(err)
+		}
+		_, err = wtr.Write(nl)
 		if err != nil {
 			panic(err)
 		}

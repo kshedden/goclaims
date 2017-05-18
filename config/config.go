@@ -39,6 +39,9 @@ type Config struct {
 	// Store this number of buckets in memory before writing to disk
 	BufMaxRecs uint64
 
+	// Number of SAS chunks processed in parallel
+	Concurrency int
+
 	// Process only this number of chunks.  If zero, all the
 	// chunks are processed.
 	MaxChunk uint32
@@ -71,6 +74,11 @@ func ReadConfig(filename string) *Config {
 	if err != nil {
 		os.Stderr.WriteString(fmt.Sprintf("Reading %s\n", filename))
 		panic(err)
+	}
+
+	if config.Concurrency == 0 {
+		print("Setting Concurrency = 10")
+		config.Concurrency = 10
 	}
 
 	return config

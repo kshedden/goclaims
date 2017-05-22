@@ -290,39 +290,48 @@ func writeCodes() {
 	}
 }
 
-func writeVname(vnames []string, prefile string, codesfile string) {
+func writeVname(vninfo map[string][]string, prefix string) {
 
-	logger.Printf("Updating variable name/code prefixes in %s", prefile)
-	mp := make(map[string]string)
+	for pa, vnames := range vninfo {
 
-	// Get the current map if it exists
-	_, err := os.Stat(prefile)
-	if !os.IsNotExist(err) {
-		rdr, err := os.Open(prefile)
-		dec := json.NewDecoder(rdr)
-		err = dec.Decode(mp)
+		prefile := path.Join(pa, "CodeGroups.json")
+		logger.Printf("Updating variable name/code prefixes in %s", prefile)
+
+		// Get the current map if it exists
+		mp := make(map[string]string)
+		_, err := os.Stat(prefile)
+		if !os.IsNotExist(err) {
+			rdr, err := os.Open(prefile)
+			if err != nil {
+				panic(err)
+			}
+			dec := json.NewDecoder(rdr)
+			err = dec.Decode(&mp)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		// Add the new code group information
+		for _, v := range vnames {
+			mp[v] = prefix
+		}
+
+		// Rewrite the file
+		fid, err := os.Create(prefile)
+		if err != nil {
+			panic(err)
+		}
+		defer fid.Close()
+		enc := json.NewEncoder(fid)
+		err = enc.Encode(mp)
 		if err != nil {
 			panic(err)
 		}
 	}
-
-	for _, v := range vnames {
-		mp[v] = prefile
-	}
-
-	fid, err := os.Create(prefile)
-	if err != nil {
-		panic(err)
-	}
-	defer fid.Close()
-	enc := json.NewEncoder(fid)
-	err = enc.Encode(codes)
-	if err != nil {
-		panic(err)
-	}
 }
 
-func Run(files []string, xform xfunc, codesfile string, prefile string, vnames []string, lgr *log.Logger) {
+func Run(files []string, xform xfunc, codesfile string, prefix string, vninfo map[string][]string, lgr *log.Logger) {
 
 	logger = lgr
 	sem = make(chan bool, concurrency)
@@ -345,7 +354,7 @@ func Run(files []string, xform xfunc, codesfile string, prefile string, vnames [
 	updateDtypes(files)
 
 	writeCodes()
-	writeVname(vnames, prefile, codesFile)
+	writeVname(vninfo, prefix)
 
 	logger.Printf("All done, exiting")
 }

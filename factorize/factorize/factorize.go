@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -27,9 +28,9 @@ var (
 	logger *log.Logger
 )
 
-func getfilenames(tp string) ([]string, []string) {
+func getfilenames(tp string) ([]string, map[string][]string) {
 	var files []string
-	vnames := make(map[string]bool)
+	vnames := make(map[string][]string)
 	for _, cnf := range conf {
 		for k := 0; k < int(cnf.NumBuckets); k++ {
 			px := config.BucketPath(k, cnf)
@@ -41,23 +42,18 @@ func getfilenames(tp string) ([]string, []string) {
 				fn := f.Name()
 				if strings.HasSuffix(fn, ".bin.sz") && !strings.HasSuffix(fn, "_string.bin.sz") && strings.HasPrefix(fn, tp) {
 					vname := strings.Replace(fn, ".bin.sz", "", 1)
-					vnames[vname] = true
+					vnames[cnf.TargetDir] = append(vnames[cnf.TargetDir], vname)
 					files = append(files, path.Join(px, fn))
 				}
 			}
 		}
 	}
 
-	var vn []string
-	for v, _ := range vnames {
-		vn = append(vn, v)
-	}
-
-	return files, vn
+	return files, vnames
 }
 
-func setupLogger() {
-	fid, err := os.Create("factorize.log")
+func setupLogger(prefix string) {
+	fid, err := os.Create(fmt.Sprintf("factorize_%s.log", prefix))
 	if err != nil {
 		panic(err)
 	}
@@ -104,9 +100,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	setupLogger()
-
 	prefix := os.Args[2]
+
+	setupLogger(prefix)
 
 	for _, f := range os.Args[3:len(os.Args)] {
 		c := config.ReadConfig(f)
@@ -114,7 +110,7 @@ func main() {
 		logger.Printf("Read config file from %s", f)
 	}
 
-	files, vnames := getfilenames(prefix)
+	files, vninfo := getfilenames(prefix)
 
 	if strings.ToLower(os.Args[1]) == "revert" {
 		logger.Printf("Reverting to string values")
@@ -126,9 +122,7 @@ func main() {
 	logger.Printf("Processing %d files with prefix %s", len(files), prefix)
 
 	codefile := prefix + "Codes.json"
-	prefile := prefix + "CodeFiles.json"
 	codefile = path.Join(conf[0].CodesDir, codefile)
-	prefile = path.Join(conf[0].CodesDir, prefile)
 	os.MkdirAll(conf[0].CodesDir, 0755)
-	factorize.Run(files, StandardizeICD9, codefile, prefile, vnames, logger)
+	factorize.Run(files, StandardizeICD9, codefile, prefix, vninfo, logger)
 }

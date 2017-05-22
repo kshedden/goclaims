@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Enrolid":"uint64","Ndcnum":"string","Pay":"float32","Seqnum":"uint64","Svcdate":"uint16","Thergrp":"uint8"}
+	dtypes = `{"Enrolid":"uint64","Ndcnum":"string","Netpay":"float32","Pay":"float32","Seqnum":"uint64","Svcdate":"uint16","Thergrp":"uint8"}
 `
 
 	wg  sync.WaitGroup
@@ -269,11 +269,12 @@ func Run(cnf *config.Config, lgr *log.Logger) {
 // rec is a row that will be added to a Bucket.
 type rec struct {
 	Enrolid uint64
+	Ndcnum  string
+	Netpay  float32
+	Pay     float32
 	Seqnum  uint64
 	Svcdate uint16
-	Pay     float32
 	Thergrp uint8
-	Ndcnum  string
 }
 
 // Bucket is a memory-backed container for columnized data.  It
@@ -283,11 +284,12 @@ type Bucket struct {
 
 	code    []uint16
 	Enrolid []uint64
+	Ndcnum  []string
+	Netpay  []float32
+	Pay     []float32
 	Seqnum  []uint64
 	Svcdate []uint16
-	Pay     []float32
 	Thergrp []uint8
-	Ndcnum  []string
 }
 
 // chunk is a typed container for data pulled directly out of a SAS file.
@@ -297,16 +299,18 @@ type chunk struct {
 	col      int
 	Enrolid  []float64
 	Enrolidm []bool
+	Ndcnum   []string
+	Ndcnumm  []bool
+	Netpay   []float64
+	Netpaym  []bool
+	Pay      []float64
+	Paym     []bool
 	Seqnum   []float64
 	Seqnumm  []bool
 	Svcdate  []float64
 	Svcdatem []bool
-	Pay      []float64
-	Paym     []bool
 	Thergrp  []string
 	Thergrpm []bool
-	Ndcnum   []string
-	Ndcnumm  []bool
 }
 
 // Add appends a rec to the end of the Bucket.
@@ -315,11 +319,12 @@ func (bucket *Bucket) Add(r *rec) {
 	bucket.Mut.Lock()
 
 	bucket.Enrolid = append(bucket.Enrolid, r.Enrolid)
+	bucket.Ndcnum = append(bucket.Ndcnum, r.Ndcnum)
+	bucket.Netpay = append(bucket.Netpay, r.Netpay)
+	bucket.Pay = append(bucket.Pay, r.Pay)
 	bucket.Seqnum = append(bucket.Seqnum, r.Seqnum)
 	bucket.Svcdate = append(bucket.Svcdate, r.Svcdate)
-	bucket.Pay = append(bucket.Pay, r.Pay)
 	bucket.Thergrp = append(bucket.Thergrp, r.Thergrp)
-	bucket.Ndcnum = append(bucket.Ndcnum, r.Ndcnum)
 
 	bucket.Mut.Unlock()
 
@@ -337,16 +342,18 @@ func (bucket *Bucket) Flush() {
 
 	bucket.flushuint64("Enrolid", bucket.Enrolid)
 	bucket.Enrolid = bucket.Enrolid[0:0]
+	bucket.flushstring("Ndcnum", bucket.Ndcnum)
+	bucket.Ndcnum = bucket.Ndcnum[0:0]
+	bucket.flushfloat32("Netpay", bucket.Netpay)
+	bucket.Netpay = bucket.Netpay[0:0]
+	bucket.flushfloat32("Pay", bucket.Pay)
+	bucket.Pay = bucket.Pay[0:0]
 	bucket.flushuint64("Seqnum", bucket.Seqnum)
 	bucket.Seqnum = bucket.Seqnum[0:0]
 	bucket.flushuint16("Svcdate", bucket.Svcdate)
 	bucket.Svcdate = bucket.Svcdate[0:0]
-	bucket.flushfloat32("Pay", bucket.Pay)
-	bucket.Pay = bucket.Pay[0:0]
 	bucket.flushuint8("Thergrp", bucket.Thergrp)
 	bucket.Thergrp = bucket.Thergrp[0:0]
-	bucket.flushstring("Ndcnum", bucket.Ndcnum)
-	bucket.Ndcnum = bucket.Ndcnum[0:0]
 
 	bucket.Mut.Unlock()
 }
@@ -367,6 +374,42 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 
 	} else {
 		msg := fmt.Sprintf("Variable ENROLID required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["NDCNUM"]
+	if ok {
+		c.Ndcnum, c.Ndcnumm, err = data[ii].AsStringSlice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable NDCNUM required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["NETPAY"]
+	if ok {
+		c.Netpay, c.Netpaym, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable NETPAY required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["PAY"]
+	if ok {
+		c.Pay, c.Paym, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable PAY required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
@@ -394,18 +437,6 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["PAY"]
-	if ok {
-		c.Pay, c.Paym, err = data[ii].AsFloat64Slice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable PAY required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
 	ii, ok = cm["THERGRP"]
 	if ok {
 		c.Thergrp, c.Thergrpm, err = data[ii].AsStringSlice()
@@ -415,18 +446,6 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 
 	} else {
 		msg := fmt.Sprintf("Variable THERGRP required but not found in SAS file\n")
-		return fmt.Errorf(msg)
-	}
-
-	ii, ok = cm["NDCNUM"]
-	if ok {
-		c.Ndcnum, c.Ndcnumm, err = data[ii].AsStringSlice()
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		msg := fmt.Sprintf("Variable NDCNUM required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
@@ -450,11 +469,15 @@ func (c *chunk) trynextrec() (*rec, bool) {
 
 	r.Enrolid = uint64(c.Enrolid[i])
 
+	r.Ndcnum = strings.TrimSpace(c.Ndcnum[i])
+
+	r.Netpay = float32(c.Netpay[i])
+
+	r.Pay = float32(c.Pay[i])
+
 	r.Seqnum = uint64(c.Seqnum[i])
 
 	r.Svcdate = uint16(c.Svcdate[i])
-
-	r.Pay = float32(c.Pay[i])
 
 	// Convert string to number
 	if len(c.Thergrp[i]) > 0 {
@@ -463,8 +486,6 @@ func (c *chunk) trynextrec() (*rec, bool) {
 			r.Thergrp = uint8(x)
 		}
 	}
-
-	r.Ndcnum = strings.TrimSpace(c.Ndcnum[i])
 
 	c.row++
 

@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Copay":"float32","Dstatus":"uint8","Dx1":"string","Dx2":"string","Enrolid":"uint64","Netpay":"float32","Pay":"float32","Proc1":"string","Seqnum":"uint64","Stdprov":"uint16","Svcdate":"uint16"}
+	dtypes = `{"Copay":"float32","Dstatus":"uint8","Dx1":"string","Dx2":"string","Enrolid":"uint64","Netpay":"float32","Pay":"float32","Proc1":"string","Seqnum":"uint64","Stdprov":"uint16","Svcdate":"uint16","Svcscat":"uint32"}
 `
 
 	wg  sync.WaitGroup
@@ -279,6 +279,7 @@ type rec struct {
 	Seqnum  uint64
 	Stdprov uint16
 	Svcdate uint16
+	Svcscat uint32
 }
 
 // Bucket is a memory-backed container for columnized data.  It
@@ -298,6 +299,7 @@ type Bucket struct {
 	Seqnum  []uint64
 	Stdprov []uint16
 	Svcdate []uint16
+	Svcscat []uint32
 }
 
 // chunk is a typed container for data pulled directly out of a SAS file.
@@ -327,6 +329,8 @@ type chunk struct {
 	Stdprovm []bool
 	Svcdate  []float64
 	Svcdatem []bool
+	Svcscat  []string
+	Svcscatm []bool
 }
 
 // Add appends a rec to the end of the Bucket.
@@ -345,6 +349,7 @@ func (bucket *Bucket) Add(r *rec) {
 	bucket.Seqnum = append(bucket.Seqnum, r.Seqnum)
 	bucket.Stdprov = append(bucket.Stdprov, r.Stdprov)
 	bucket.Svcdate = append(bucket.Svcdate, r.Svcdate)
+	bucket.Svcscat = append(bucket.Svcscat, r.Svcscat)
 
 	bucket.Mut.Unlock()
 
@@ -382,6 +387,8 @@ func (bucket *Bucket) Flush() {
 	bucket.Stdprov = bucket.Stdprov[0:0]
 	bucket.flushuint16("Svcdate", bucket.Svcdate)
 	bucket.Svcdate = bucket.Svcdate[0:0]
+	bucket.flushuint32("Svcscat", bucket.Svcscat)
+	bucket.Svcscat = bucket.Svcscat[0:0]
 
 	bucket.Mut.Unlock()
 }
@@ -525,6 +532,18 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 		return fmt.Errorf(msg)
 	}
 
+	ii, ok = cm["SVCSCAT"]
+	if ok {
+		c.Svcscat, c.Svcscatm, err = data[ii].AsStringSlice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable SVCSCAT required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
 	return nil
 }
 
@@ -570,6 +589,14 @@ func (c *chunk) trynextrec() (*rec, bool) {
 	r.Stdprov = uint16(c.Stdprov[i])
 
 	r.Svcdate = uint16(c.Svcdate[i])
+
+	// Convert string to number
+	if len(c.Svcscat[i]) > 0 {
+		x, err := strconv.Atoi(c.Svcscat[i])
+		if err == nil {
+			r.Svcscat = uint32(x)
+		}
+	}
 
 	c.row++
 

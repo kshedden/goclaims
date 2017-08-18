@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Enrolid":"uint64","Ndcnum":"string","Netpay":"float32","Pay":"float32","Seqnum":"uint64","Svcdate":"uint16","Thergrp":"uint8"}
+	dtypes = `{"Daysupp":"uint16","Enrolid":"uint64","Ndcnum":"string","Netpay":"float32","Pay":"float32","Seqnum":"uint64","Svcdate":"uint16","Thercls":"uint16","Thergrp":"uint8"}
 `
 
 	wg  sync.WaitGroup
@@ -268,12 +268,14 @@ func Run(cnf *config.Config, lgr *log.Logger) {
 
 // rec is a row that will be added to a Bucket.
 type rec struct {
+	Daysupp uint16
 	Enrolid uint64
 	Ndcnum  string
 	Netpay  float32
 	Pay     float32
 	Seqnum  uint64
 	Svcdate uint16
+	Thercls uint16
 	Thergrp uint8
 }
 
@@ -283,12 +285,14 @@ type Bucket struct {
 	BaseBucket
 
 	code    []uint16
+	Daysupp []uint16
 	Enrolid []uint64
 	Ndcnum  []string
 	Netpay  []float32
 	Pay     []float32
 	Seqnum  []uint64
 	Svcdate []uint16
+	Thercls []uint16
 	Thergrp []uint8
 }
 
@@ -297,6 +301,8 @@ type Bucket struct {
 type chunk struct {
 	row      int
 	col      int
+	Daysupp  []float64
+	Daysuppm []bool
 	Enrolid  []float64
 	Enrolidm []bool
 	Ndcnum   []string
@@ -309,6 +315,8 @@ type chunk struct {
 	Seqnumm  []bool
 	Svcdate  []float64
 	Svcdatem []bool
+	Thercls  []float64
+	Therclsm []bool
 	Thergrp  []string
 	Thergrpm []bool
 }
@@ -318,12 +326,14 @@ func (bucket *Bucket) Add(r *rec) {
 
 	bucket.Mut.Lock()
 
+	bucket.Daysupp = append(bucket.Daysupp, r.Daysupp)
 	bucket.Enrolid = append(bucket.Enrolid, r.Enrolid)
 	bucket.Ndcnum = append(bucket.Ndcnum, r.Ndcnum)
 	bucket.Netpay = append(bucket.Netpay, r.Netpay)
 	bucket.Pay = append(bucket.Pay, r.Pay)
 	bucket.Seqnum = append(bucket.Seqnum, r.Seqnum)
 	bucket.Svcdate = append(bucket.Svcdate, r.Svcdate)
+	bucket.Thercls = append(bucket.Thercls, r.Thercls)
 	bucket.Thergrp = append(bucket.Thergrp, r.Thergrp)
 
 	bucket.Mut.Unlock()
@@ -340,6 +350,8 @@ func (bucket *Bucket) Flush() {
 
 	bucket.Mut.Lock()
 
+	bucket.flushuint16("Daysupp", bucket.Daysupp)
+	bucket.Daysupp = bucket.Daysupp[0:0]
 	bucket.flushuint64("Enrolid", bucket.Enrolid)
 	bucket.Enrolid = bucket.Enrolid[0:0]
 	bucket.flushstring("Ndcnum", bucket.Ndcnum)
@@ -352,6 +364,8 @@ func (bucket *Bucket) Flush() {
 	bucket.Seqnum = bucket.Seqnum[0:0]
 	bucket.flushuint16("Svcdate", bucket.Svcdate)
 	bucket.Svcdate = bucket.Svcdate[0:0]
+	bucket.flushuint16("Thercls", bucket.Thercls)
+	bucket.Thercls = bucket.Thercls[0:0]
 	bucket.flushuint8("Thergrp", bucket.Thergrp)
 	bucket.Thergrp = bucket.Thergrp[0:0]
 
@@ -364,6 +378,18 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 	var err error
 	var ii int
 	var ok bool
+
+	ii, ok = cm["DAYSUPP"]
+	if ok {
+		c.Daysupp, c.Daysuppm, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable DAYSUPP required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
 
 	ii, ok = cm["ENROLID"]
 	if ok {
@@ -437,6 +463,18 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 		return fmt.Errorf(msg)
 	}
 
+	ii, ok = cm["THERCLS"]
+	if ok {
+		c.Thercls, c.Therclsm, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable THERCLS required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
 	ii, ok = cm["THERGRP"]
 	if ok {
 		c.Thergrp, c.Thergrpm, err = data[ii].AsStringSlice()
@@ -467,6 +505,8 @@ func (c *chunk) trynextrec() (*rec, bool) {
 		return nil, true
 	}
 
+	r.Daysupp = uint16(c.Daysupp[i])
+
 	r.Enrolid = uint64(c.Enrolid[i])
 
 	r.Ndcnum = strings.TrimSpace(c.Ndcnum[i])
@@ -478,6 +518,8 @@ func (c *chunk) trynextrec() (*rec, bool) {
 	r.Seqnum = uint64(c.Seqnum[i])
 
 	r.Svcdate = uint16(c.Svcdate[i])
+
+	r.Thercls = uint16(c.Thercls[i])
 
 	// Convert string to number
 	if len(c.Thergrp[i]) > 0 {

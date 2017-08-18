@@ -23,7 +23,7 @@ const (
 	concurrency = 20
 )
 
-// A function that is applied to eah string value prior to integer
+// A function that is applied to each string value prior to integer
 // coding.
 type xfunc func(string) string
 

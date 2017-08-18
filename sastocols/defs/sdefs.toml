@@ -63,3 +63,9 @@
   GoType = "uint16"
   SASType = "float64"
   Must = true
+
+[[Variable]]
+  Name = "Svcscat"
+  GoType = "uint32"
+  SASType = "string"
+  Must = true

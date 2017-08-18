@@ -29,6 +29,12 @@
   Must = true
 
 [[Variable]]
+  Name = "Mhsacovg"
+  GoType = "uint8"
+  SASType = "string"
+  Must = true
+
+[[Variable]]
   Name = "MSA"
   GoType = "uint32"
   SASType = "float64"

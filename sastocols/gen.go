@@ -1,11 +1,11 @@
 // Code generation script for sastocols.  Takes a variable definition
-// file in json format and generates code for bucketing and
+// file in toml format and generates code for bucketing and
 // columnizing a set of SAS files, each of which contains the
 // variables as described in the variable definition file.
 //
 // To generate a go script, run this script as follows:
 //
-// go run gen.go vdefs.json > sastocols.go
+// go run gen.go vdefs.toml > sastocols.go
 //
 // The resulting sastocols.go script is a Go script that can be run
 // as follows:

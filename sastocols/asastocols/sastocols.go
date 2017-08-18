@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Dobyr":"uint16","Egeoloc":"uint8","Emprel":"uint8","Enrolid":"uint64","MSA":"uint32","MSwgtkey":"uint8","Memdays":"uint16","Region":"uint8","Rx":"uint8","Seqnum":"uint64","Sex":"uint8","Wgtkey":"uint8","Year":"uint16"}
+	dtypes = `{"Dobyr":"uint16","Egeoloc":"uint8","Emprel":"uint8","Enrolid":"uint64","MSA":"uint32","MSwgtkey":"uint8","Memdays":"uint16","Mhsacovg":"uint8","Region":"uint8","Rx":"uint8","Seqnum":"uint64","Sex":"uint8","Wgtkey":"uint8","Year":"uint16"}
 `
 
 	wg  sync.WaitGroup
@@ -273,6 +273,7 @@ type rec struct {
 	Emprel   uint8
 	Enrolid  uint64
 	Memdays  uint16
+	Mhsacovg uint8
 	MSA      uint32
 	MSwgtkey uint8
 	Region   uint8
@@ -294,6 +295,7 @@ type Bucket struct {
 	Emprel   []uint8
 	Enrolid  []uint64
 	Memdays  []uint16
+	Mhsacovg []uint8
 	MSA      []uint32
 	MSwgtkey []uint8
 	Region   []uint8
@@ -319,6 +321,8 @@ type chunk struct {
 	Enrolidm  []bool
 	Memdays   []float64
 	Memdaysm  []bool
+	Mhsacovg  []string
+	Mhsacovgm []bool
 	MSA       []float64
 	MSAm      []bool
 	MSwgtkey  []string
@@ -347,6 +351,7 @@ func (bucket *Bucket) Add(r *rec) {
 	bucket.Emprel = append(bucket.Emprel, r.Emprel)
 	bucket.Enrolid = append(bucket.Enrolid, r.Enrolid)
 	bucket.Memdays = append(bucket.Memdays, r.Memdays)
+	bucket.Mhsacovg = append(bucket.Mhsacovg, r.Mhsacovg)
 	bucket.MSA = append(bucket.MSA, r.MSA)
 	bucket.MSwgtkey = append(bucket.MSwgtkey, r.MSwgtkey)
 	bucket.Region = append(bucket.Region, r.Region)
@@ -380,6 +385,8 @@ func (bucket *Bucket) Flush() {
 	bucket.Enrolid = bucket.Enrolid[0:0]
 	bucket.flushuint16("Memdays", bucket.Memdays)
 	bucket.Memdays = bucket.Memdays[0:0]
+	bucket.flushuint8("Mhsacovg", bucket.Mhsacovg)
+	bucket.Mhsacovg = bucket.Mhsacovg[0:0]
 	bucket.flushuint32("MSA", bucket.MSA)
 	bucket.MSA = bucket.MSA[0:0]
 	bucket.flushuint8("MSwgtkey", bucket.MSwgtkey)
@@ -464,6 +471,18 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 
 	} else {
 		msg := fmt.Sprintf("Variable MEMDAYS required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["MHSACOVG"]
+	if ok {
+		c.Mhsacovg, c.Mhsacovgm, err = data[ii].AsStringSlice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable MHSACOVG required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
@@ -596,6 +615,14 @@ func (c *chunk) trynextrec() (*rec, bool) {
 	r.Enrolid = uint64(c.Enrolid[i])
 
 	r.Memdays = uint16(c.Memdays[i])
+
+	// Convert string to number
+	if len(c.Mhsacovg[i]) > 0 {
+		x, err := strconv.Atoi(c.Mhsacovg[i])
+		if err == nil {
+			r.Mhsacovg = uint8(x)
+		}
+	}
 
 	r.MSA = uint32(c.MSA[i])
 

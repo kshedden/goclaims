@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Dobyr":"uint16","Egeoloc":"uint8","Emprel":"uint8","Enrolid":"uint64","MSA":"uint32","MSwgtkey":"uint8","Memdays":"uint16","Memdays1":"uint16","Memdays10":"uint16","Memdays11":"uint16","Memdays12":"uint16","Memdays2":"uint16","Memdays3":"uint16","Memdays4":"uint16","Memdays5":"uint16","Memdays6":"uint16","Memdays7":"uint16","Memdays8":"uint16","Memdays9":"uint16","Mhsacovg":"uint8","Region":"uint8","Rx":"uint8","Seqnum":"uint64","Sex":"uint8","Wgtkey":"uint8","Year":"uint16"}
+	dtypes = `{"Dobyr":"uint16","Egeoloc":"uint8","Emprel":"uint8","Enrolid":"uint64","MSA":"uint32","MSwgtkey":"uint8","Memday1":"uint16","Memday10":"uint16","Memday11":"uint16","Memday12":"uint16","Memday2":"uint16","Memday3":"uint16","Memday4":"uint16","Memday5":"uint16","Memday6":"uint16","Memday7":"uint16","Memday8":"uint16","Memday9":"uint16","Memdays":"uint16","Mhsacovg":"uint8","Region":"uint8","Rx":"uint8","Seqnum":"uint64","Sex":"uint8","Wgtkey":"uint8","Year":"uint16"}
 `
 
 	wg  sync.WaitGroup
@@ -268,32 +268,32 @@ func Run(cnf *config.Config, lgr *log.Logger) {
 
 // rec is a row that will be added to a Bucket.
 type rec struct {
-	Dobyr     uint16
-	Egeoloc   uint8
-	Emprel    uint8
-	Enrolid   uint64
-	Memdays   uint16
-	Memdays1  uint16
-	Memdays2  uint16
-	Memdays3  uint16
-	Memdays4  uint16
-	Memdays5  uint16
-	Memdays6  uint16
-	Memdays7  uint16
-	Memdays8  uint16
-	Memdays9  uint16
-	Memdays10 uint16
-	Memdays11 uint16
-	Memdays12 uint16
-	Mhsacovg  uint8
-	MSA       uint32
-	MSwgtkey  uint8
-	Region    uint8
-	Rx        uint8
-	Seqnum    uint64
-	Sex       uint8
-	Wgtkey    uint8
-	Year      uint16
+	Dobyr    uint16
+	Egeoloc  uint8
+	Emprel   uint8
+	Enrolid  uint64
+	Memdays  uint16
+	Memday1  uint16
+	Memday2  uint16
+	Memday3  uint16
+	Memday4  uint16
+	Memday5  uint16
+	Memday6  uint16
+	Memday7  uint16
+	Memday8  uint16
+	Memday9  uint16
+	Memday10 uint16
+	Memday11 uint16
+	Memday12 uint16
+	Mhsacovg uint8
+	MSA      uint32
+	MSwgtkey uint8
+	Region   uint8
+	Rx       uint8
+	Seqnum   uint64
+	Sex      uint8
+	Wgtkey   uint8
+	Year     uint16
 }
 
 // Bucket is a memory-backed container for columnized data.  It
@@ -301,92 +301,92 @@ type rec struct {
 type Bucket struct {
 	BaseBucket
 
-	code      []uint16
-	Dobyr     []uint16
-	Egeoloc   []uint8
-	Emprel    []uint8
-	Enrolid   []uint64
-	Memdays   []uint16
-	Memdays1  []uint16
-	Memdays2  []uint16
-	Memdays3  []uint16
-	Memdays4  []uint16
-	Memdays5  []uint16
-	Memdays6  []uint16
-	Memdays7  []uint16
-	Memdays8  []uint16
-	Memdays9  []uint16
-	Memdays10 []uint16
-	Memdays11 []uint16
-	Memdays12 []uint16
-	Mhsacovg  []uint8
-	MSA       []uint32
-	MSwgtkey  []uint8
-	Region    []uint8
-	Rx        []uint8
-	Seqnum    []uint64
-	Sex       []uint8
-	Wgtkey    []uint8
-	Year      []uint16
+	code     []uint16
+	Dobyr    []uint16
+	Egeoloc  []uint8
+	Emprel   []uint8
+	Enrolid  []uint64
+	Memdays  []uint16
+	Memday1  []uint16
+	Memday2  []uint16
+	Memday3  []uint16
+	Memday4  []uint16
+	Memday5  []uint16
+	Memday6  []uint16
+	Memday7  []uint16
+	Memday8  []uint16
+	Memday9  []uint16
+	Memday10 []uint16
+	Memday11 []uint16
+	Memday12 []uint16
+	Mhsacovg []uint8
+	MSA      []uint32
+	MSwgtkey []uint8
+	Region   []uint8
+	Rx       []uint8
+	Seqnum   []uint64
+	Sex      []uint8
+	Wgtkey   []uint8
+	Year     []uint16
 }
 
 // chunk is a typed container for data pulled directly out of a SAS file.
 // There are no type conversions or other modifications from the SAS file.
 type chunk struct {
-	row        int
-	col        int
-	Dobyr      []float64
-	Dobyrm     []bool
-	Egeoloc    []string
-	Egeolocm   []bool
-	Emprel     []string
-	Emprelm    []bool
-	Enrolid    []float64
-	Enrolidm   []bool
-	Memdays    []float64
-	Memdaysm   []bool
-	Memdays1   []float64
-	Memdays1m  []bool
-	Memdays2   []float64
-	Memdays2m  []bool
-	Memdays3   []float64
-	Memdays3m  []bool
-	Memdays4   []float64
-	Memdays4m  []bool
-	Memdays5   []float64
-	Memdays5m  []bool
-	Memdays6   []float64
-	Memdays6m  []bool
-	Memdays7   []float64
-	Memdays7m  []bool
-	Memdays8   []float64
-	Memdays8m  []bool
-	Memdays9   []float64
-	Memdays9m  []bool
-	Memdays10  []float64
-	Memdays10m []bool
-	Memdays11  []float64
-	Memdays11m []bool
-	Memdays12  []float64
-	Memdays12m []bool
-	Mhsacovg   []string
-	Mhsacovgm  []bool
-	MSA        []float64
-	MSAm       []bool
-	MSwgtkey   []string
-	MSwgtkeym  []bool
-	Region     []string
-	Regionm    []bool
-	Rx         []string
-	Rxm        []bool
-	Seqnum     []float64
-	Seqnumm    []bool
-	Sex        []string
-	Sexm       []bool
-	Wgtkey     []float64
-	Wgtkeym    []bool
-	Year       []float64
-	Yearm      []bool
+	row       int
+	col       int
+	Dobyr     []float64
+	Dobyrm    []bool
+	Egeoloc   []string
+	Egeolocm  []bool
+	Emprel    []string
+	Emprelm   []bool
+	Enrolid   []float64
+	Enrolidm  []bool
+	Memdays   []float64
+	Memdaysm  []bool
+	Memday1   []float64
+	Memday1m  []bool
+	Memday2   []float64
+	Memday2m  []bool
+	Memday3   []float64
+	Memday3m  []bool
+	Memday4   []float64
+	Memday4m  []bool
+	Memday5   []float64
+	Memday5m  []bool
+	Memday6   []float64
+	Memday6m  []bool
+	Memday7   []float64
+	Memday7m  []bool
+	Memday8   []float64
+	Memday8m  []bool
+	Memday9   []float64
+	Memday9m  []bool
+	Memday10  []float64
+	Memday10m []bool
+	Memday11  []float64
+	Memday11m []bool
+	Memday12  []float64
+	Memday12m []bool
+	Mhsacovg  []string
+	Mhsacovgm []bool
+	MSA       []float64
+	MSAm      []bool
+	MSwgtkey  []string
+	MSwgtkeym []bool
+	Region    []string
+	Regionm   []bool
+	Rx        []string
+	Rxm       []bool
+	Seqnum    []float64
+	Seqnumm   []bool
+	Sex       []string
+	Sexm      []bool
+	Wgtkey    []float64
+	Wgtkeym   []bool
+	Year      []float64
+	Yearm     []bool
 }
 
 // Add appends a rec to the end of the Bucket.
@@ -399,18 +399,18 @@ func (bucket *Bucket) Add(r *rec) {
 	bucket.Emprel = append(bucket.Emprel, r.Emprel)
 	bucket.Enrolid = append(bucket.Enrolid, r.Enrolid)
 	bucket.Memdays = append(bucket.Memdays, r.Memdays)
-	bucket.Memdays1 = append(bucket.Memdays1, r.Memdays1)
-	bucket.Memdays2 = append(bucket.Memdays2, r.Memdays2)
-	bucket.Memdays3 = append(bucket.Memdays3, r.Memdays3)
-	bucket.Memdays4 = append(bucket.Memdays4, r.Memdays4)
-	bucket.Memdays5 = append(bucket.Memdays5, r.Memdays5)
-	bucket.Memdays6 = append(bucket.Memdays6, r.Memdays6)
-	bucket.Memdays7 = append(bucket.Memdays7, r.Memdays7)
-	bucket.Memdays8 = append(bucket.Memdays8, r.Memdays8)
-	bucket.Memdays9 = append(bucket.Memdays9, r.Memdays9)
-	bucket.Memdays10 = append(bucket.Memdays10, r.Memdays10)
-	bucket.Memdays11 = append(bucket.Memdays11, r.Memdays11)
-	bucket.Memdays12 = append(bucket.Memdays12, r.Memdays12)
+	bucket.Memday1 = append(bucket.Memday1, r.Memday1)
+	bucket.Memday2 = append(bucket.Memday2, r.Memday2)
+	bucket.Memday3 = append(bucket.Memday3, r.Memday3)
+	bucket.Memday4 = append(bucket.Memday4, r.Memday4)
+	bucket.Memday5 = append(bucket.Memday5, r.Memday5)
+	bucket.Memday6 = append(bucket.Memday6, r.Memday6)
+	bucket.Memday7 = append(bucket.Memday7, r.Memday7)
+	bucket.Memday8 = append(bucket.Memday8, r.Memday8)
+	bucket.Memday9 = append(bucket.Memday9, r.Memday9)
+	bucket.Memday10 = append(bucket.Memday10, r.Memday10)
+	bucket.Memday11 = append(bucket.Memday11, r.Memday11)
+	bucket.Memday12 = append(bucket.Memday12, r.Memday12)
 	bucket.Mhsacovg = append(bucket.Mhsacovg, r.Mhsacovg)
 	bucket.MSA = append(bucket.MSA, r.MSA)
 	bucket.MSwgtkey = append(bucket.MSwgtkey, r.MSwgtkey)
@@ -445,30 +445,30 @@ func (bucket *Bucket) Flush() {
 	bucket.Enrolid = bucket.Enrolid[0:0]
 	bucket.flushuint16("Memdays", bucket.Memdays)
 	bucket.Memdays = bucket.Memdays[0:0]
-	bucket.flushuint16("Memdays1", bucket.Memdays1)
-	bucket.Memdays1 = bucket.Memdays1[0:0]
-	bucket.flushuint16("Memdays2", bucket.Memdays2)
-	bucket.Memdays2 = bucket.Memdays2[0:0]
-	bucket.flushuint16("Memdays3", bucket.Memdays3)
-	bucket.Memdays3 = bucket.Memdays3[0:0]
-	bucket.flushuint16("Memdays4", bucket.Memdays4)
-	bucket.Memdays4 = bucket.Memdays4[0:0]
-	bucket.flushuint16("Memdays5", bucket.Memdays5)
-	bucket.Memdays5 = bucket.Memdays5[0:0]
-	bucket.flushuint16("Memdays6", bucket.Memdays6)
-	bucket.Memdays6 = bucket.Memdays6[0:0]
-	bucket.flushuint16("Memdays7", bucket.Memdays7)
-	bucket.Memdays7 = bucket.Memdays7[0:0]
-	bucket.flushuint16("Memdays8", bucket.Memdays8)
-	bucket.Memdays8 = bucket.Memdays8[0:0]
-	bucket.flushuint16("Memdays9", bucket.Memdays9)
-	bucket.Memdays9 = bucket.Memdays9[0:0]
-	bucket.flushuint16("Memdays10", bucket.Memdays10)
-	bucket.Memdays10 = bucket.Memdays10[0:0]
-	bucket.flushuint16("Memdays11", bucket.Memdays11)
-	bucket.Memdays11 = bucket.Memdays11[0:0]
-	bucket.flushuint16("Memdays12", bucket.Memdays12)
-	bucket.Memdays12 = bucket.Memdays12[0:0]
+	bucket.flushuint16("Memday1", bucket.Memday1)
+	bucket.Memday1 = bucket.Memday1[0:0]
+	bucket.flushuint16("Memday2", bucket.Memday2)
+	bucket.Memday2 = bucket.Memday2[0:0]
+	bucket.flushuint16("Memday3", bucket.Memday3)
+	bucket.Memday3 = bucket.Memday3[0:0]
+	bucket.flushuint16("Memday4", bucket.Memday4)
+	bucket.Memday4 = bucket.Memday4[0:0]
+	bucket.flushuint16("Memday5", bucket.Memday5)
+	bucket.Memday5 = bucket.Memday5[0:0]
+	bucket.flushuint16("Memday6", bucket.Memday6)
+	bucket.Memday6 = bucket.Memday6[0:0]
+	bucket.flushuint16("Memday7", bucket.Memday7)
+	bucket.Memday7 = bucket.Memday7[0:0]
+	bucket.flushuint16("Memday8", bucket.Memday8)
+	bucket.Memday8 = bucket.Memday8[0:0]
+	bucket.flushuint16("Memday9", bucket.Memday9)
+	bucket.Memday9 = bucket.Memday9[0:0]
+	bucket.flushuint16("Memday10", bucket.Memday10)
+	bucket.Memday10 = bucket.Memday10[0:0]
+	bucket.flushuint16("Memday11", bucket.Memday11)
+	bucket.Memday11 = bucket.Memday11[0:0]
+	bucket.flushuint16("Memday12", bucket.Memday12)
+	bucket.Memday12 = bucket.Memday12[0:0]
 	bucket.flushuint8("Mhsacovg", bucket.Mhsacovg)
 	bucket.Mhsacovg = bucket.Mhsacovg[0:0]
 	bucket.flushuint32("MSA", bucket.MSA)
@@ -558,147 +558,147 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS1"]
+	ii, ok = cm["MEMDAY1"]
 	if ok {
-		c.Memdays1, c.Memdays1m, err = data[ii].AsFloat64Slice()
+		c.Memday1, c.Memday1m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS1 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY1 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS2"]
+	ii, ok = cm["MEMDAY2"]
 	if ok {
-		c.Memdays2, c.Memdays2m, err = data[ii].AsFloat64Slice()
+		c.Memday2, c.Memday2m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS2 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY2 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS3"]
+	ii, ok = cm["MEMDAY3"]
 	if ok {
-		c.Memdays3, c.Memdays3m, err = data[ii].AsFloat64Slice()
+		c.Memday3, c.Memday3m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS3 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY3 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS4"]
+	ii, ok = cm["MEMDAY4"]
 	if ok {
-		c.Memdays4, c.Memdays4m, err = data[ii].AsFloat64Slice()
+		c.Memday4, c.Memday4m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS4 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY4 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS5"]
+	ii, ok = cm["MEMDAY5"]
 	if ok {
-		c.Memdays5, c.Memdays5m, err = data[ii].AsFloat64Slice()
+		c.Memday5, c.Memday5m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS5 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY5 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS6"]
+	ii, ok = cm["MEMDAY6"]
 	if ok {
-		c.Memdays6, c.Memdays6m, err = data[ii].AsFloat64Slice()
+		c.Memday6, c.Memday6m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS6 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY6 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS7"]
+	ii, ok = cm["MEMDAY7"]
 	if ok {
-		c.Memdays7, c.Memdays7m, err = data[ii].AsFloat64Slice()
+		c.Memday7, c.Memday7m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS7 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY7 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS8"]
+	ii, ok = cm["MEMDAY8"]
 	if ok {
-		c.Memdays8, c.Memdays8m, err = data[ii].AsFloat64Slice()
+		c.Memday8, c.Memday8m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS8 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY8 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS9"]
+	ii, ok = cm["MEMDAY9"]
 	if ok {
-		c.Memdays9, c.Memdays9m, err = data[ii].AsFloat64Slice()
+		c.Memday9, c.Memday9m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS9 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY9 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS10"]
+	ii, ok = cm["MEMDAY10"]
 	if ok {
-		c.Memdays10, c.Memdays10m, err = data[ii].AsFloat64Slice()
+		c.Memday10, c.Memday10m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS10 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY10 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS11"]
+	ii, ok = cm["MEMDAY11"]
 	if ok {
-		c.Memdays11, c.Memdays11m, err = data[ii].AsFloat64Slice()
+		c.Memday11, c.Memday11m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS11 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY11 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
-	ii, ok = cm["MEMDAYS12"]
+	ii, ok = cm["MEMDAY12"]
 	if ok {
-		c.Memdays12, c.Memdays12m, err = data[ii].AsFloat64Slice()
+		c.Memday12, c.Memday12m, err = data[ii].AsFloat64Slice()
 		if err != nil {
 			panic(err)
 		}
 
 	} else {
-		msg := fmt.Sprintf("Variable MEMDAYS12 required but not found in SAS file\n")
+		msg := fmt.Sprintf("Variable MEMDAY12 required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
@@ -844,29 +844,29 @@ func (c *chunk) trynextrec() (*rec, bool) {
 
 	r.Memdays = uint16(c.Memdays[i])
 
-	r.Memdays1 = uint16(c.Memdays1[i])
+	r.Memday1 = uint16(c.Memday1[i])
 
-	r.Memdays2 = uint16(c.Memdays2[i])
+	r.Memday2 = uint16(c.Memday2[i])
 
-	r.Memdays3 = uint16(c.Memdays3[i])
+	r.Memday3 = uint16(c.Memday3[i])
 
-	r.Memdays4 = uint16(c.Memdays4[i])
+	r.Memday4 = uint16(c.Memday4[i])
 
-	r.Memdays5 = uint16(c.Memdays5[i])
+	r.Memday5 = uint16(c.Memday5[i])
 
-	r.Memdays6 = uint16(c.Memdays6[i])
+	r.Memday6 = uint16(c.Memday6[i])
 
-	r.Memdays7 = uint16(c.Memdays7[i])
+	r.Memday7 = uint16(c.Memday7[i])
 
-	r.Memdays8 = uint16(c.Memdays8[i])
+	r.Memday8 = uint16(c.Memday8[i])
 
-	r.Memdays9 = uint16(c.Memdays9[i])
+	r.Memday9 = uint16(c.Memday9[i])
 
-	r.Memdays10 = uint16(c.Memdays10[i])
+	r.Memday10 = uint16(c.Memday10[i])
 
-	r.Memdays11 = uint16(c.Memdays11[i])
+	r.Memday11 = uint16(c.Memday11[i])
 
-	r.Memdays12 = uint16(c.Memdays12[i])
+	r.Memday12 = uint16(c.Memday12[i])
 
 	// Convert string to number
 	if len(c.Mhsacovg[i]) > 0 {

@@ -29,73 +29,73 @@
   Must = true
 
 [[Variable]]
-  Name = "Memdays1"
+  Name = "Memday1"
   GoType = "uint16"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Memdays2"
+  Name = "Memday2"
   GoType = "uint16"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Memdays3"
+  Name = "Memday3"
   GoType = "uint16"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Memdays4"
+  Name = "Memday4"
   GoType = "uint16"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Memdays5"
+  Name = "Memday5"
   GoType = "uint16"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Memdays6"
+  Name = "Memday6"
   GoType = "uint16"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Memdays7"
+  Name = "Memday7"
   GoType = "uint16"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Memdays8"
+  Name = "Memday8"
   GoType = "uint16"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Memdays9"
+  Name = "Memday9"
   GoType = "uint16"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Memdays10"
+  Name = "Memday10"
   GoType = "uint16"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Memdays11"
+  Name = "Memday11"
   GoType = "uint16"
   SASType = "float64"
   Must = true
 
 [[Variable]]
-  Name = "Memdays12"
+  Name = "Memday12"
   GoType = "uint16"
   SASType = "float64"
   Must = true

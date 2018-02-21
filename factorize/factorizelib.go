@@ -81,6 +81,7 @@ func dofile(file string) {
 	buf := make([]byte, 8)
 
 	scanner := bufio.NewScanner(rdr)
+	scanner.Buffer(make([]byte, 10000000), 10000000)
 	var jj int
 	for ; scanner.Scan(); jj++ {
 		tok := scanner.Text()
@@ -173,6 +174,7 @@ func getfreqfile(file string, sem chan bool, rslt chan map[string]uint64) {
 	cnt := make(map[string]uint64)
 
 	scanner := bufio.NewScanner(rdr)
+	scanner.Buffer(make([]byte, 10000000), 10000000)
 	for scanner.Scan() {
 		tok := scanner.Text()
 

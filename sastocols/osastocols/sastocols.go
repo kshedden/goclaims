@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Copay":"float32","Deduct":"float32","Dx1":"string","Dx2":"string","Dx3":"string","Dx4":"string","Enrolid":"uint64","Netpay":"float32","Proc1":"string","Seqnum":"uint64","Stdprov":"uint16","Svcdate":"uint16","Svcscat":"uint32"}
+	dtypes = `{"Copay":"float32","Deduct":"float32","Dx1":"string","Dx2":"string","Dx3":"string","Dx4":"string","Enrolid":"uint64","Netpay":"float32","Proc1":"string","Procgrp":"uint16","Seqnum":"uint64","Stdprov":"uint16","Svcdate":"uint16","Svcscat":"uint32"}
 `
 
 	wg  sync.WaitGroup
@@ -275,6 +275,7 @@ type rec struct {
 	Dx3     string
 	Dx4     string
 	Proc1   string
+	Procgrp uint16
 	Svcdate uint16
 	Copay   float32
 	Deduct  float32
@@ -296,6 +297,7 @@ type Bucket struct {
 	Dx3     []string
 	Dx4     []string
 	Proc1   []string
+	Procgrp []uint16
 	Svcdate []uint16
 	Copay   []float32
 	Deduct  []float32
@@ -323,6 +325,8 @@ type chunk struct {
 	Dx4m     []bool
 	Proc1    []string
 	Proc1m   []bool
+	Procgrp  []float64
+	Procgrpm []bool
 	Svcdate  []float64
 	Svcdatem []bool
 	Copay    []float64
@@ -349,6 +353,7 @@ func (bucket *Bucket) Add(r *rec) {
 	bucket.Dx3 = append(bucket.Dx3, r.Dx3)
 	bucket.Dx4 = append(bucket.Dx4, r.Dx4)
 	bucket.Proc1 = append(bucket.Proc1, r.Proc1)
+	bucket.Procgrp = append(bucket.Procgrp, r.Procgrp)
 	bucket.Svcdate = append(bucket.Svcdate, r.Svcdate)
 	bucket.Copay = append(bucket.Copay, r.Copay)
 	bucket.Deduct = append(bucket.Deduct, r.Deduct)
@@ -384,6 +389,8 @@ func (bucket *Bucket) Flush() {
 	bucket.Dx4 = bucket.Dx4[0:0]
 	bucket.flushstring("Proc1", bucket.Proc1)
 	bucket.Proc1 = bucket.Proc1[0:0]
+	bucket.flushuint16("Procgrp", bucket.Procgrp)
+	bucket.Procgrp = bucket.Procgrp[0:0]
 	bucket.flushuint16("Svcdate", bucket.Svcdate)
 	bucket.Svcdate = bucket.Svcdate[0:0]
 	bucket.flushfloat32("Copay", bucket.Copay)
@@ -482,6 +489,18 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 
 	} else {
 		msg := fmt.Sprintf("Variable PROC1 required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["PROCGRP"]
+	if ok {
+		c.Procgrp, c.Procgrpm, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable PROCGRP required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
@@ -596,6 +615,8 @@ func (c *chunk) trynextrec() (*rec, bool) {
 	}
 
 	r.Proc1 = strings.TrimSpace(c.Proc1[i])
+
+	r.Procgrp = uint16(c.Procgrp[i])
 
 	r.Svcdate = uint16(c.Svcdate[i])
 

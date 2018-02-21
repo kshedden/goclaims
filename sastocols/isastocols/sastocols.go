@@ -28,7 +28,7 @@ var (
 
 	rslt_chan chan *rec
 
-	dtypes = `{"Admdate":"uint16","Admtyp":"uint8","Disdate":"uint16","Dstatus":"uint8","Dx1":"string","Dx10":"string","Dx11":"string","Dx12":"string","Dx13":"string","Dx14":"string","Dx15":"string","Dx2":"string","Dx3":"string","Dx4":"string","Dx5":"string","Dx6":"string","Dx7":"string","Dx8":"string","Dx9":"string","Enrolid":"uint64","Hospnet":"float32","Hosppay":"float32","Physnet":"float32","Physpay":"float32","Proc1":"string","Proc10":"string","Proc11":"string","Proc12":"string","Proc13":"string","Proc14":"string","Proc15":"string","Proc2":"string","Proc3":"string","Proc4":"string","Proc5":"string","Proc6":"string","Proc7":"string","Proc8":"string","Proc9":"string","Seqnum":"uint64","Totcoins":"float32","Totcopay":"float32","Totded":"float32","Totnet":"float32","Totpay":"float32"}
+	dtypes = `{"Admdate":"uint16","Admtyp":"uint8","Disdate":"uint16","Drg":"uint16","Dstatus":"uint8","Dx1":"string","Dx10":"string","Dx11":"string","Dx12":"string","Dx13":"string","Dx14":"string","Dx15":"string","Dx2":"string","Dx3":"string","Dx4":"string","Dx5":"string","Dx6":"string","Dx7":"string","Dx8":"string","Dx9":"string","Enrolid":"uint64","Hospnet":"float32","Hosppay":"float32","Physnet":"float32","Physpay":"float32","Proc1":"string","Proc10":"string","Proc11":"string","Proc12":"string","Proc13":"string","Proc14":"string","Proc15":"string","Proc2":"string","Proc3":"string","Proc4":"string","Proc5":"string","Proc6":"string","Proc7":"string","Proc8":"string","Proc9":"string","Seqnum":"uint64","Totcoins":"float32","Totcopay":"float32","Totded":"float32","Totnet":"float32","Totpay":"float32"}
 `
 
 	wg  sync.WaitGroup
@@ -271,6 +271,7 @@ type rec struct {
 	Admtyp   uint8
 	Admdate  uint16
 	Disdate  uint16
+	Drg      uint16
 	Dstatus  uint8
 	Dx1      string
 	Dx2      string
@@ -324,6 +325,7 @@ type Bucket struct {
 	Admtyp   []uint8
 	Admdate  []uint16
 	Disdate  []uint16
+	Drg      []uint16
 	Dstatus  []uint8
 	Dx1      []string
 	Dx2      []string
@@ -379,6 +381,8 @@ type chunk struct {
 	Admdatem  []bool
 	Disdate   []float64
 	Disdatem  []bool
+	Drg       []float64
+	Drgm      []bool
 	Dstatus   []string
 	Dstatusm  []bool
 	Dx1       []string
@@ -473,6 +477,7 @@ func (bucket *Bucket) Add(r *rec) {
 	bucket.Admtyp = append(bucket.Admtyp, r.Admtyp)
 	bucket.Admdate = append(bucket.Admdate, r.Admdate)
 	bucket.Disdate = append(bucket.Disdate, r.Disdate)
+	bucket.Drg = append(bucket.Drg, r.Drg)
 	bucket.Dstatus = append(bucket.Dstatus, r.Dstatus)
 	bucket.Dx1 = append(bucket.Dx1, r.Dx1)
 	bucket.Dx2 = append(bucket.Dx2, r.Dx2)
@@ -536,6 +541,8 @@ func (bucket *Bucket) Flush() {
 	bucket.Admdate = bucket.Admdate[0:0]
 	bucket.flushuint16("Disdate", bucket.Disdate)
 	bucket.Disdate = bucket.Disdate[0:0]
+	bucket.flushuint16("Drg", bucket.Drg)
+	bucket.Drg = bucket.Drg[0:0]
 	bucket.flushuint8("Dstatus", bucket.Dstatus)
 	bucket.Dstatus = bucket.Dstatus[0:0]
 	bucket.flushstring("Dx1", bucket.Dx1)
@@ -664,6 +671,18 @@ func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 
 	} else {
 		msg := fmt.Sprintf("Variable DISDATE required but not found in SAS file\n")
+		return fmt.Errorf(msg)
+	}
+
+	ii, ok = cm["DRG"]
+	if ok {
+		c.Drg, c.Drgm, err = data[ii].AsFloat64Slice()
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		msg := fmt.Sprintf("Variable DRG required but not found in SAS file\n")
 		return fmt.Errorf(msg)
 	}
 
@@ -1200,6 +1219,8 @@ func (c *chunk) trynextrec() (*rec, bool) {
 	r.Admdate = uint16(c.Admdate[i])
 
 	r.Disdate = uint16(c.Disdate[i])
+
+	r.Drg = uint16(c.Drg[i])
 
 	// Convert string to number
 	if len(c.Dstatus[i]) > 0 {

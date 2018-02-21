@@ -17,6 +17,12 @@
   Must = true
 
 [[Variable]]
+  Name = "Drg"
+  GoType = "uint16"
+  SASType = "float64"
+  Must = true
+
+[[Variable]]
   Name = "Dstatus"
   GoType = "uint8"
   SASType = "string"

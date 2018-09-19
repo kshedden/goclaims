@@ -19,15 +19,15 @@ import (
 )
 
 var (
-        // Needed to avoid errrors if no other references are made to these packages.
-        _ = strings.TrimSpace
+    // Needed to avoid errrors if no other references are made to these packages.
+    _ = strings.TrimSpace
 	_ = strconv.Atoi
 
-        conf *config.Config
+    conf *config.Config
 
 	rslt_chan chan *rec
 
-        dtypes = `{{ .Dtypes }}`
+    dtypes = `{{ .Dtypes }}`
 
 	wg  sync.WaitGroup
 	hwg sync.WaitGroup
@@ -60,7 +60,7 @@ func harvest() {
 
 	for r := range rslt_chan {
 
-		binary.LittleEndian.PutUint64(buf, r.Enrolid)
+		binary.LittleEndian.PutUint64(buf, r.{{ .KeyVar }})
 		ha.Reset()
 		_, err := ha.Write(buf)
 		if err != nil {
@@ -146,7 +146,7 @@ func dofile(filename string) {
 }
 
 // nextrec finds the next valid record from the chunk and returns it.
-// recs with missing enrolid values are skipped, so this may not
+// recs with missing KeyVar values are skipped, so this may not
 // return a value for every row of the SAS file chunk.  Returns nil
 // when the chunk is fully processed.
 func (c *chunk) nextrec() *rec {
@@ -266,20 +266,20 @@ func Run(cnf *config.Config, lgr *log.Logger) {
 
 // rec is a row that will be added to a Bucket.
 type rec struct {
-{{ range .NameType }}
+    {{ range .NameType }}
         {{ .Name }} {{ .GoType }}
-{{- end }}
+    {{- end }}
 }
 
 // Bucket is a memory-backed container for columnized data.  It
 // contains data exactly as it will be written to disk.
 type Bucket struct {
-        BaseBucket
+    BaseBucket
 
-        code []uint16
-{{- range .NameType }}
+    code []uint16
+    {{- range .NameType }}
         {{ .Name }} []{{ .GoType }}
-{{- end }}
+    {{- end }}
 }
 
 // chunk is a typed container for data pulled directly out of a SAS file.
@@ -288,10 +288,10 @@ type chunk struct {
         row int
         col int
 
-{{- range .NameType }}
-    {{ .Name }} []{{ .SASType }}
-    {{ .Name }}m []bool
-{{- end }}
+    {{- range .NameType }}
+        {{ .Name }} []{{ .SASType }}
+        {{ .Name }}m []bool
+    {{- end }}
 }
 
 
@@ -300,13 +300,13 @@ func (bucket *Bucket) Add(r *rec) {
 
 	bucket.Mut.Lock()
 
-{{ range .NameType }}
-    bucket.{{ .Name }} = append(bucket.{{ .Name }}, r.{{  .Name }})
-{{- end }}
+    {{ range .NameType }}
+        bucket.{{ .Name }} = append(bucket.{{ .Name }}, r.{{  .Name }})
+    {{- end }}
 
 	bucket.Mut.Unlock()
 
-	if uint64(len(bucket.Enrolid)) > conf.BufMaxRecs {
+	if uint64(len(bucket.{{ .KeyVar }})) > conf.BufMaxRecs {
 		bucket.Flush()
 	}
 }
@@ -330,31 +330,31 @@ func (bucket *Bucket) Flush() {
 func (c *chunk) getcols(data []*datareader.Series, cm map[string]int) error {
 
 	var err error
-        var ii int
-        var ok bool
-        {{ range .NameType }}
-                ii, ok = cm["{{ .SASName }}"]
-                if ok {
-	                c.{{ .Name }}, c.{{ .Name }}m, err = data[ii].As{{ .SASTypeU }}Slice()
-	                if err != nil {
-		                panic(err)
-	                }
-                {{ if .Must }}
+    var ii int
+    var ok bool
+    {{ range .NameType }}
+        ii, ok = cm["{{ .SASName }}"]
+        if ok {
+	        c.{{ .Name }}, c.{{ .Name }}m, err = data[ii].As{{ .SASTypeU }}Slice()
+	        if err != nil {
+		        panic(err)
+	        }
+        {{ if .Must }}
 	        } else {
 	                msg := fmt.Sprintf("Variable {{ .SASName }} required but not found in SAS file\n")
                         return fmt.Errorf(msg)
                 }
-	        {{ else }}
+	    {{ else }}
                 }
-                {{ end }}
         {{ end }}
+    {{ end }}
 
-        return nil
+    return nil
 }
 
 func (c *chunk) trynextrec() (*rec, bool) {
 
-	if c.row >= len(c.Enrolid) {
+	if c.row >= len(c.{{ .KeyVar }}) {
 		return nil, false
 	}
 
@@ -362,7 +362,8 @@ func (c *chunk) trynextrec() (*rec, bool) {
 
 	i := c.row
 
-	if c.Enrolidm[i] {
+    // Check if key variable is missing
+	if c.{{ .KeyVar }}m[i] {
 	        c.row++
 	        return nil, true
         }

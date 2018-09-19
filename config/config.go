@@ -137,6 +137,10 @@ type VarDesc struct {
 	// is not present.
 	Must bool
 
+	// If true, this is the key variable used for bucketing the
+	// SAS files.
+	KeyVar bool
+
 	SASName  string // used internally
 	SASTypeU string // used internally
 }

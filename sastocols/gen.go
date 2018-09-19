@@ -27,12 +27,13 @@ import (
 	"github.com/kshedden/gosascols/config"
 )
 
-// tvals contains values that are to be insterted into the code
+// tvals contains values that are to be inserted into the code
 // template.
 type tvals struct {
 	Rtypes   []string
 	Dtypes   string
 	NameType []*config.VarDesc
+	KeyVar   string
 }
 
 // getdtypes returns a json encoded map describing the dtypes, based
@@ -74,6 +75,18 @@ func main() {
 		Rtypes:   rtypes,
 		NameType: vdesca,
 		Dtypes:   getdtypes(vdesca),
+	}
+
+	// Set the key variable
+	found := false
+	for _, v := range vdesca {
+		if v.KeyVar {
+			tval.KeyVar = v.Name
+			found = true
+		}
+	}
+	if !found {
+		panic("No key variable found")
 	}
 
 	var buf bytes.Buffer

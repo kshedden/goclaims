@@ -2,8 +2,7 @@ Convert SAS files to bucketed columnized files
 ==============================================
 
 Suppose we are given a collection of large SAS files having a common
-set of variables (optionally, some variables may be absent from some
-of the files).  Our goal here is to produce a directory layout
+set of variables.  Our goal here is to produce a directory layout
 containing all the data obtained from the SAS files, organized like
 this:
 
@@ -22,9 +21,10 @@ Project
 |      |       |-------dtypes.json
 ```
 
-Each file contains a raw stream of binary data values, with no header
-or metadata (type metadata is placed in the dtypes.json file).  The
-exception to this is that string values are delimited by newlines.
+Each data file (e.g. Var1.bin.sz ) ontains a raw stream of binary data
+values, with no header or metadata (some metadata is placed in the
+dtypes.json file).  The exception to this is that string values are
+delimited by newlines.
 
 The filename prefixes Var1, Var2, etc. are the variable names from the
 SAS files.  The number of "buckets" (e.g. two in the example above) is
@@ -117,7 +117,8 @@ The configuration file contains the following parameters:
 per bucket, before flushing the bucket to disk
 
 * __MaxChunk__: Stop processing each SAS file after this number of
-chunks are read (used for debugging and testing)
+chunks are read (used for debugging and testing).  If zero, all chunks
+are read.
 
 sastocols
 ---------

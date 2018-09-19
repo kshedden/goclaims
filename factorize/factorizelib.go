@@ -21,6 +21,9 @@ import (
 const (
 	// Limit concurrent goroutines to this number.
 	concurrency = 20
+
+	// Limit length of token size to factorize
+	maxtok = 100
 )
 
 // A function that is applied to each string value prior to integer
@@ -81,7 +84,6 @@ func dofile(file string) {
 	buf := make([]byte, 8)
 
 	scanner := bufio.NewScanner(rdr)
-	scanner.Buffer(make([]byte, 10000000), 10000000)
 	var jj int
 	for ; scanner.Scan(); jj++ {
 		tok := scanner.Text()
@@ -174,20 +176,18 @@ func getfreqfile(file string, sem chan bool, rslt chan map[string]uint64) {
 	cnt := make(map[string]uint64)
 
 	scanner := bufio.NewScanner(rdr)
-	scanner.Buffer(make([]byte, 10000000), 10000000)
 	for scanner.Scan() {
 		tok := scanner.Text()
+
+		if len(tok) > maxtok {
+			logger.Printf("File: %s\nToken: %s\n", file, tok)
+		}
 
 		if xf != nil {
 			tok = xf(tok)
 		}
 
-		c, ok := cnt[tok]
-		if !ok {
-			cnt[tok] = 1
-		} else {
-			cnt[tok] = c + 1
-		}
+		cnt[tok] += 1
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -204,16 +204,12 @@ func getfreq(files []string) {
 	freq = make(map[string]uint64)
 	hsem := make(chan bool, 1)
 
+	// Harvesting goroutine
 	hsem <- true
 	go func() {
 		for r := range rslt {
 			for k, v := range r {
-				c, ok := freq[k]
-				if !ok {
-					freq[k] = v
-				} else {
-					freq[k] = c + v
-				}
+				freq[k] += v
 			}
 		}
 		<-hsem
@@ -231,6 +227,7 @@ func getfreq(files []string) {
 
 	logger.Printf("Done calculating frequencies of %d codes\n", len(freq))
 
+	// Make sure the harvesting goroutine is done before the function exits
 	hsem <- true
 }
 
@@ -279,7 +276,7 @@ func getcodes() {
 
 // Save the factor code/label associations.
 func writeCodes() {
-	logger.Printf("Writing code/label associations to %s", codesFile)
+	logger.Printf("Writing %d code/label associations to %s...", len(codes), codesFile)
 	fid, err := os.Create(codesFile)
 	if err != nil {
 		panic(err)
@@ -290,10 +287,12 @@ func writeCodes() {
 	if err != nil {
 		panic(err)
 	}
+	logger.Printf("Done")
 }
 
 func writeVname(vninfo map[string][]string, prefix string) {
 
+	// Why are these files written to multiple directories?
 	for pa, vnames := range vninfo {
 
 		prefile := path.Join(pa, "CodeGroups.json")
@@ -333,13 +332,11 @@ func writeVname(vninfo map[string][]string, prefix string) {
 	}
 }
 
-func Run(files []string, xform xfunc, codesfile string, prefix string, vninfo map[string][]string, lgr *log.Logger) {
+func Run(files []string, codesfile string, prefix string, vninfo map[string][]string, lgr *log.Logger) {
 
 	logger = lgr
 	sem = make(chan bool, concurrency)
 	codesFile = codesfile
-
-	xf = xform
 
 	getfreq(files)
 	getcodes()

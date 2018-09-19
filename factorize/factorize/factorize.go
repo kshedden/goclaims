@@ -7,23 +7,20 @@ import (
 	"os"
 	"path"
 	"strings"
+	"unicode"
 
 	"github.com/kshedden/gosascols/config"
 	"github.com/kshedden/gosascols/factorize"
 )
 
-func StandardizeICD9(code string) string {
-
-	if len(code) < 5 {
-		m := 5 - len(code)
-		code = code + strings.Repeat("0", m)
-	}
-
-	return code
-}
-
 var (
 	conf []*config.Config
+
+	// If multi=true, all variables named {prefix}# are unified
+	// into a single variable of uvarint type.  Otherwise, only
+	// the variable named prefix is factorized and converted to
+	// uvarint.
+	multi bool
 
 	logger *log.Logger
 )
@@ -40,11 +37,29 @@ func getfilenames(tp string) ([]string, map[string][]string) {
 			}
 			for _, f := range fl {
 				fn := f.Name()
-				if strings.HasSuffix(fn, ".bin.sz") && !strings.HasSuffix(fn, "_string.bin.sz") && strings.HasPrefix(fn, tp) {
-					vname := strings.Replace(fn, ".bin.sz", "", 1)
-					vnames[cnf.TargetDir] = append(vnames[cnf.TargetDir], vname)
-					files = append(files, path.Join(px, fn))
+				if !strings.HasSuffix(fn, ".bin.sz") {
+					// Not a data column
+					continue
 				}
+
+				if strings.HasSuffix(fn, "_string.bin.sz") {
+					// This is the backup copy of the original text data
+					continue
+				}
+
+				if !strings.HasPrefix(fn, tp) {
+					// Not a matching variable
+					continue
+				}
+
+				if multi && !(len(fn) > len(tp) && unicode.IsDigit(rune(fn[len(tp)]))) {
+					// In multi mode, file names must have the form {prefix}#.
+					continue
+				}
+
+				vname := strings.Replace(fn, ".bin.sz", "", 1)
+				vnames[cnf.TargetDir] = append(vnames[cnf.TargetDir], vname)
+				files = append(files, path.Join(px, fn))
 			}
 		}
 	}
@@ -64,6 +79,8 @@ func setupLogger(prefix string) {
 // provided files.  Note that the reversion applies to all factorized
 // files, not only the files with the given prefix type.
 func revert(files []string) {
+
+	print("reverting all factorized files with all prefixes...")
 
 	dm := make(map[string]bool)
 	for _, f := range files {
@@ -102,6 +119,11 @@ func main() {
 
 	prefix := os.Args[2]
 
+	if strings.HasSuffix(prefix, "*") {
+		multi = true
+		prefix = prefix[0 : len(prefix)-1]
+	}
+
 	setupLogger(prefix)
 
 	for _, f := range os.Args[3:len(os.Args)] {
@@ -119,10 +141,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	logger.Printf("Processing %d files with prefix %s", len(files), prefix)
+	logger.Printf("Processing %d files with prefix %s + digit", len(files), prefix)
 
 	codefile := prefix + "Codes.json"
 	codefile = path.Join(conf[0].CodesDir, codefile)
 	os.MkdirAll(conf[0].CodesDir, 0755)
-	factorize.Run(files, StandardizeICD9, codefile, prefix, vninfo, logger)
+
+	factorize.Run(files, codefile, prefix, vninfo, logger)
 }

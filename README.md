@@ -159,7 +159,7 @@ The elements of a variable description are as follows:
   variable is missing in any of the SAS files
 
 * __KeyVar__: Set to "true" for the variable that will be used to
-  define the buckets.  Should be true for exactly one variable.
+  define the buckets.  Should be true for exactly one variable.
 
 To build a go program to perform the conversions, run the `gen.go`
 script in the `sastocols` directory, passing in a variable definition

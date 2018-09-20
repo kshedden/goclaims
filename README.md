@@ -139,6 +139,7 @@ these lines is:
   GoType = "uint64"
   SASType = "float64"
   Must = true
+  KeyVar = false
 ```
 
 The elements of a variable description are as follows:

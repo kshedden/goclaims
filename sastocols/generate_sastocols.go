@@ -5,7 +5,7 @@
 //
 // To generate a go script, run this script as follows:
 //
-// go run gen.go vdefs.toml > sastocols.go
+// go run generate_sastocols.go vdefs.toml > sastocols.go
 //
 // The resulting sastocols.go script is a Go script that can be run
 // as follows:
